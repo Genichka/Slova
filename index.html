@@ -1,0 +1,1819 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#123028">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Слова — англійська</title>
+<style>
+:root{
+  --board:#123028; --board-dk:#0d241e; --board-lt:#1b4034;
+  --chalk:#f4f1e6; --dim:#9fb3aa;
+  --yellow:#f2c14e; --coral:#e8705f; --sky:#6fc3c8; --lilac:#b49ae0; --green:#8fd694;
+  --r:14px; --nav:64px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%}
+body{background:var(--board);color:var(--chalk);
+  font-family:"Segoe UI",Roboto,-apple-system,system-ui,sans-serif;font-size:17px;line-height:1.45;
+  overscroll-behavior:none;-webkit-user-select:none;user-select:none}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.05;z-index:0;
+  background-image:radial-gradient(circle at 20% 30%,#fff 0 1px,transparent 1px),
+    radial-gradient(circle at 70% 60%,#fff 0 1px,transparent 1px),
+    radial-gradient(circle at 40% 80%,#fff 0 1px,transparent 1px);
+  background-size:120px 120px,90px 90px,150px 150px}
+#app{position:relative;z-index:1;max-width:600px;margin:0 auto;min-height:100%;
+  display:flex;flex-direction:column;
+  padding:env(safe-area-inset-top) 14px calc(var(--nav) + env(safe-area-inset-bottom))}
+.screen{display:none;flex:1;flex-direction:column;padding-top:12px}
+.screen.on{display:flex}
+.spacer{flex:1}
+.head{padding:8px 0 4px;display:flex;align-items:center;gap:12px}
+.head h1{font-size:23px;margin:0;font-weight:800;letter-spacing:-.3px}
+.head .sub{color:var(--dim);font-size:13.5px;margin-top:2px}
+.topbar{display:flex;align-items:center;gap:10px;padding:6px 0}
+.icon-btn{background:none;border:1.5px solid rgba(244,241,230,.25);color:var(--chalk);
+  width:40px;height:40px;border-radius:12px;font-size:17px;cursor:pointer;flex:none}
+.icon-btn:active{background:rgba(244,241,230,.12)}
+
+/* аватар профілю */
+.ava{width:42px;height:42px;border-radius:50%;border:2px solid var(--c,var(--yellow));
+  display:flex;align-items:center;justify-content:center;font-size:21px;flex:none;
+  background:var(--board-lt);cursor:pointer}
+
+nav{position:fixed;left:0;right:0;bottom:0;z-index:5;background:var(--board-dk);
+  border-top:1px solid rgba(244,241,230,.14);padding-bottom:env(safe-area-inset-bottom);
+  display:flex;max-width:600px;margin:0 auto}
+nav button{flex:1;background:none;border:0;color:var(--dim);font:inherit;font-size:11.5px;
+  padding:8px 2px 9px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px}
+nav button .ic{font-size:20px;line-height:1}
+nav button.on{color:var(--yellow)}
+
+.chips{display:flex;gap:7px;overflow-x:auto;padding:8px 0 10px}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;padding:8px 13px;border-radius:20px;border:1.5px solid rgba(244,241,230,.25);
+  background:none;color:var(--dim);font:inherit;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap}
+.chip.on{background:var(--c,var(--sky));border-color:var(--c,var(--sky));color:#10281f}
+
+.btn{display:block;width:100%;padding:15px 16px;border-radius:var(--r);
+  border:1.5px solid rgba(244,241,230,.22);background:var(--board-lt);color:var(--chalk);
+  font:inherit;font-weight:600;cursor:pointer;text-align:center}
+.btn:active{transform:translateY(1px)}
+.btn.primary{background:var(--yellow);color:#2a2010;border-color:var(--yellow)}
+.btn.ghost{background:none}
+.btn.sm{padding:10px 12px;font-size:14.5px}
+.btn.ghost.on{background:rgba(242,193,78,.16);border-color:var(--yellow);color:var(--yellow)}
+.btn.ghost.on.mastered{background:rgba(111,195,200,.16);border-color:var(--sky);color:var(--sky)}
+.ratewrap{padding:2px 0 12px}
+.ratelbl{color:var(--dim);font-size:13px;text-align:center;margin-bottom:8px}
+.rate10{display:grid;grid-template-columns:repeat(10,1fr);gap:6px}
+.rate10 button{height:44px;min-width:0;border-radius:9px;border:1.5px solid rgba(244,241,230,.22);
+  background:var(--board-lt);color:var(--chalk);font:inherit;font-weight:700;font-size:14px;cursor:pointer;padding:0}
+.rate10 button.r-lo{border-color:rgba(232,112,95,.4)}
+.rate10 button.r-hi{border-color:rgba(111,195,200,.4)}
+.rate10 button.on{background:var(--yellow);border-color:var(--yellow);color:#2a2010}
+.rate10 button.on.r-lo{background:var(--coral);border-color:var(--coral);color:#2a1410}
+.rate10 button.on.r-hi{background:var(--sky);border-color:var(--sky);color:#0c2a2b}
+.sword{border-bottom:1px dotted var(--dim);cursor:pointer}
+.sword:active{color:var(--yellow);border-color:var(--yellow)}
+.row2{display:flex;gap:10px}.row2>*{flex:1}
+
+.tile{display:flex;gap:14px;align-items:center;width:100%;padding:16px;border-radius:var(--r);
+  border:1.5px solid rgba(244,241,230,.2);background:var(--board-lt);color:var(--chalk);
+  font:inherit;text-align:left;cursor:pointer;margin-bottom:10px}
+.tile:active{transform:translateY(1px)}
+.tile .em{font-size:29px;flex:none;width:42px;text-align:center}
+.tile .t{font-weight:700;font-size:17.5px}
+.tile .d{color:var(--dim);font-size:13.5px;margin-top:1px}
+
+.lvcard{border:1.5px solid rgba(244,241,230,.2);border-left:6px solid var(--c);
+  border-radius:12px;background:var(--board-lt);padding:14px 16px;margin-bottom:12px}
+.lvcard .nm{font-weight:700}
+.lvcard .st{color:var(--dim);font-size:13px;margin-top:2px}
+.meter{height:6px;border-radius:3px;background:rgba(244,241,230,.14);margin-top:9px;overflow:hidden;display:flex}
+.meter i{display:block;height:100%}
+.legend{display:flex;gap:16px;flex-wrap:wrap;color:var(--dim);font-size:12.5px;padding:9px 0 0}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+
+.track{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--dim);padding:2px 0 4px}
+.track .line{flex:1;height:4px;background:rgba(244,241,230,.15);border-radius:2px;overflow:hidden}
+.track .line i{display:block;height:100%;background:var(--yellow);transition:width .25s}
+.card{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:6px 0 12px}
+.emoji{font-size:98px;line-height:1;filter:drop-shadow(0 6px 14px rgba(0,0,0,.35))}
+.prompt{font-size:32px;font-weight:800;margin-top:14px;letter-spacing:-.4px}
+.prompt.small{font-size:25px}
+.hint{color:var(--dim);font-size:14px;margin-top:8px}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding-bottom:10px}
+.opt{padding:16px 12px;border-radius:var(--r);border:1.5px solid rgba(244,241,230,.22);
+  background:var(--board-lt);color:var(--chalk);font:inherit;font-weight:600;font-size:16.5px;
+  cursor:pointer;min-height:58px;display:flex;align-items:center;justify-content:center;text-align:center}
+.opt.ok{background:rgba(111,195,200,.22);border-color:var(--sky);color:#dffbfc}
+.opt.no{background:rgba(232,112,95,.2);border-color:var(--coral);color:#ffe3de}
+
+/* ---- кросворд ---- */
+.cwtop{display:flex;gap:10px;align-items:center;padding:2px 0 6px;font-size:13.5px;color:var(--dim)}
+.cwtop b{color:var(--chalk);font-weight:700}
+.cw-wrap{overflow:auto;padding:2px 0 6px;position:relative}
+.cw-cap{position:absolute;top:0;left:0;width:1px;height:1px;padding:0;margin:0;border:0;
+  opacity:0;font-size:16px;pointer-events:none;caret-color:transparent}
+.kbtoggle{color:var(--dim);font-size:12.5px;text-align:center;padding:6px 0;cursor:pointer;
+  -webkit-user-select:none;user-select:none}
+table.cw{border-collapse:collapse;margin:0 auto}
+table.cw td{width:32px;height:32px;padding:0;text-align:center;font-weight:700;font-size:16px;
+  border:1px solid transparent;background:transparent;color:transparent}
+table.cw td.cell{background:#1d4438;border-color:rgba(244,241,230,.28);color:var(--chalk);cursor:pointer;position:relative}
+table.cw td.cell.inword{background:#2a5a4a}
+table.cw td.cell.sel{background:var(--yellow);color:#2a2010}
+table.cw td.cell.done{background:rgba(111,195,200,.26);color:#e8ffff}
+table.cw td.cell.wrong{background:rgba(232,112,95,.3);color:#ffe3de}
+table.cw td.cell span.n{position:absolute;top:0;left:2px;font-size:9px;font-weight:600;color:var(--dim)}
+table.cw td.cell.sel span.n{color:#5a4a1a}
+.clue{padding:9px 12px;border-radius:12px;background:var(--board-lt);
+  border:1.5px solid rgba(244,241,230,.2);margin:2px 0 6px;display:flex;gap:10px;align-items:center;min-height:52px}
+.clue .em{font-size:24px}
+.clue .tx{font-weight:600;font-size:16px}
+.clue .meta{color:var(--dim);font-size:12.5px}
+.kb{display:grid;gap:6px;padding-bottom:8px;padding-top:4px}
+.kb .kr{display:grid;gap:6px;grid-auto-flow:column;justify-content:center}
+.kb button{min-width:32px;height:46px;border-radius:9px;border:1px solid rgba(244,241,230,.22);
+  background:var(--board-lt);color:var(--chalk);font:inherit;font-weight:700;font-size:16px;cursor:pointer;padding:0 3px}
+.kb button:active{background:var(--yellow);color:#2a2010;transform:scale(.94)}
+.kb button.wide{min-width:58px;font-size:13px}
+.cluelist{padding:4px 0 8px}
+.cluelist .grp{color:var(--dim);font-size:12.5px;font-weight:700;padding:8px 0 4px}
+.cluerow{display:flex;gap:9px;align-items:center;padding:7px 9px;border-radius:9px;cursor:pointer}
+.cluerow.on{background:var(--board-lt)}
+.cluerow.solved{opacity:.5}
+.cluerow .no{width:20px;color:var(--dim);font-size:13px;font-weight:700}
+.cluerow .em{font-size:18px}
+.cluerow .tx{font-size:14.5px}
+.cluerow .ln{margin-left:auto;color:var(--dim);font-size:12px}
+
+.result{flex:1;display:flex;flex-direction:column;justify-content:center;text-align:center;gap:6px}
+.result .big{font-size:54px;font-weight:800;color:var(--yellow);line-height:1}
+.result .msg{font-size:19px;font-weight:600}
+.result .note{color:var(--dim)}
+.stars{font-size:30px;letter-spacing:6px}
+
+.cards4{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:6px 0 10px}
+.kpi{background:var(--board-lt);border:1.5px solid rgba(244,241,230,.18);border-radius:12px;padding:13px 14px}
+.kpi .v{font-size:26px;font-weight:800;line-height:1.1}
+.kpi .l{color:var(--dim);font-size:12.5px;margin-top:3px}
+.sect{font-weight:700;font-size:15px;margin:16px 0 6px}
+.bars{display:flex;align-items:flex-end;gap:3px;height:80px;padding:6px 0 0}
+.bars .b{flex:1;background:rgba(244,241,230,.16);border-radius:3px 3px 0 0;min-height:3px}
+.bars .b.has{background:var(--yellow)}
+.axis{display:flex;justify-content:space-between;color:var(--dim);font-size:11px;padding-top:5px}
+.stat{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid rgba(244,241,230,.12)}
+.stat .code{font-weight:800;width:34px;color:var(--c)}
+.stat .nm{font-weight:600;font-size:15px}
+.stat .num{margin-left:auto;color:var(--dim);font-size:14px;white-space:nowrap}
+
+.wordrow{display:flex;align-items:center;gap:10px;padding:9px 2px;border-bottom:1px solid rgba(244,241,230,.1);cursor:pointer}
+.wordrow .em{font-size:21px;width:27px;text-align:center}
+.wordrow .en{font-weight:700;font-size:15.5px}
+.wordrow .ua{color:var(--dim);font-size:13px}
+.wordrow .sc{margin-left:auto;font-size:13px;white-space:nowrap;font-weight:600}
+.wordrow .sc .g{color:var(--sky)}
+.wordrow .sc .r{color:var(--coral)}
+.wordrow .bx{margin-left:8px;font-size:11px;color:var(--dim);white-space:nowrap}
+
+.plist{display:flex;flex-direction:column;gap:10px}
+.prow{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;
+  border:1.5px solid rgba(244,241,230,.2);background:var(--board-lt);cursor:pointer}
+.prow.on{border-color:var(--yellow)}
+.prow .nm{font-weight:700}
+.prow .d{color:var(--dim);font-size:13px}
+.prow .del{margin-left:auto;color:var(--dim);font-size:18px;padding:4px 6px}
+.pfbtn{flex:none;width:44px;height:44px;border-radius:12px;font-size:17px;cursor:pointer;
+  border:1.5px solid rgba(244,241,230,.22);background:none;color:var(--dim)}
+.pfbtn:active{background:rgba(244,241,230,.12)}
+.badge-act{font-size:11px;font-weight:600;color:#10281f;background:var(--yellow);
+  border-radius:20px;padding:2px 8px;margin-left:6px;vertical-align:2px}
+
+#c-input{width:100%;padding:15px 16px;border-radius:14px;font:inherit;font-size:20px;
+  font-weight:700;text-align:center;letter-spacing:1px;
+  border:1.5px solid rgba(244,241,230,.3);background:var(--board-lt);color:var(--chalk);
+  -webkit-user-select:text;user-select:text}
+#c-input:focus{outline:none;border-color:var(--yellow)}
+#c-input.ok{border-color:var(--sky);background:rgba(111,195,200,.18)}
+#c-input.no{border-color:var(--coral);background:rgba(232,112,95,.18)}
+.ua-big{font-size:20px;color:var(--sky);font-weight:600;margin-top:6px}
+.sentence{margin-top:14px;font-size:16.5px;line-height:1.5;color:var(--chalk);
+  max-width:30ch;opacity:.92}
+.sentence u{text-decoration:none;border-bottom:2px dashed var(--yellow);padding:0 3px;
+  color:var(--yellow);font-weight:700}
+.sentence .gap{display:inline-block;min-width:64px;border-bottom:2px dashed var(--dim);margin:0 3px}
+.feed{min-height:24px;text-align:center;font-size:15px;padding-top:8px;color:var(--dim)}
+.feed b{color:var(--sky)}
+.note-box{width:100%;padding:13px 14px;border-radius:12px;border:1.5px solid rgba(244,241,230,.25);
+  background:var(--board-lt);color:var(--chalk);font:inherit;margin-bottom:12px;min-height:76px;
+  -webkit-user-select:text;user-select:text;resize:none}
+.mnem{color:var(--lilac);font-size:14px;margin-top:10px;max-width:30ch}
+.ring{width:58px;height:58px;flex:none}
+.ring text{fill:var(--chalk);font-size:15px;font-weight:700;text-anchor:middle}
+.goalrow{display:flex;align-items:center;gap:14px;padding:12px 14px;border-radius:12px;
+  border:1.5px solid rgba(244,241,230,.2);background:var(--board-lt);margin-bottom:12px}
+.toast{position:fixed;left:50%;bottom:calc(var(--nav) + 18px);transform:translateX(-50%);z-index:9;
+  background:#0a1c17;border:1.5px solid rgba(244,241,230,.25);padding:11px 18px;border-radius:12px;
+  font-size:15px;opacity:0;pointer-events:none;transition:opacity .2s;max-width:90%;text-align:center}
+.toast.on{opacity:1}
+.modal{position:fixed;inset:0;z-index:20;background:rgba(6,18,14,.75);display:none;
+  align-items:center;justify-content:center;padding:20px}
+.modal.on{display:flex}
+.modal .box{background:var(--board);border:1.5px solid rgba(244,241,230,.25);border-radius:16px;
+  padding:18px;max-width:400px;width:100%}
+.modal h2{margin:0 0 10px;font-size:19px}
+.modal input{width:100%;padding:13px 14px;border-radius:12px;border:1.5px solid rgba(244,241,230,.25);
+  background:var(--board-lt);color:var(--chalk);font:inherit;margin-bottom:12px;-webkit-user-select:text;user-select:text}
+.emopick{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.emopick button{width:44px;height:44px;border-radius:12px;font-size:22px;cursor:pointer;
+  border:1.5px solid rgba(244,241,230,.2);background:var(--board-lt)}
+.emopick button.on{border-color:var(--yellow);background:rgba(242,193,78,.18)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media (max-width:480px){
+  /* десять кнопок в один ряд на вузькому екрані дають смужки по ~30px —
+     промахи псують самооцінку слова. Два ряди по п'ять надійніші. */
+  .rate10{grid-template-columns:repeat(5,1fr)}
+}
+@media (max-width:360px){
+  .emoji{font-size:78px}.prompt{font-size:27px}
+  table.cw td{width:29px;height:29px;font-size:14px}
+  .kb button{min-width:29px;height:44px}
+}
+</style>
+<link rel="manifest" href="./manifest.json">
+<meta name="apple-mobile-web-app-title" content="Слова">
+</head>
+<body>
+<div id="app">
+
+<!-- ===== ВЧИТИ ===== -->
+<section id="s-learn" class="screen on">
+  <div class="head">
+    <div class="ava" id="ava-learn">🙂</div>
+    <div style="flex:1"><h1 id="hi">Слова</h1><div class="sub" id="learn-sub"></div></div>
+  </div>
+  <div class="goalrow" id="goalrow">
+    <svg class="ring" viewBox="0 0 40 40">
+      <circle cx="20" cy="20" r="16" fill="none" stroke="rgba(244,241,230,.15)" stroke-width="5"/>
+      <circle id="ring-fg" cx="20" cy="20" r="16" fill="none" stroke="var(--yellow)" stroke-width="5"
+              stroke-linecap="round" stroke-dasharray="100.5" stroke-dashoffset="100.5"
+              transform="rotate(-90 20 20)"/>
+      <text x="20" y="25" id="ring-tx">0</text>
+    </svg>
+    <div style="flex:1">
+      <div style="font-weight:700" id="goal-t">Ціль на сьогодні</div>
+      <div class="sub" id="goal-d"></div>
+    </div>
+  </div>
+  <div class="chips" id="chips-learn"></div>
+  <div class="lvcard" id="lv-card">
+    <div class="nm" id="lv-name"></div>
+    <div class="st" id="lv-st"></div>
+    <div class="meter"><i id="m-known"></i><i id="m-learn"></i></div>
+    <div class="legend">
+      <span><i style="background:var(--sky)"></i><span id="n-known">0</span> знаю</span>
+      <span><i style="background:var(--yellow)"></i><span id="n-learn">0</span> вчу</span>
+      <span><i style="background:rgba(244,241,230,.3)"></i><span id="n-new">0</span> нові</span>
+    </div>
+  </div>
+  <button class="tile" id="go-resume" style="display:none;border-color:var(--yellow)">
+    <div class="em">⏯️</div>
+    <div><div class="t">Продовжити</div><div class="d" id="resume-txt"></div></div></button>
+  <button class="tile" id="go-cards"><div class="em">🖼️</div>
+    <div><div class="t">Слова з картинками</div><div class="d">Десять слів за раунд</div></div></button>
+  <button class="tile" id="go-review"><div class="em">🔁</div>
+    <div><div class="t">Повторення</div><div class="d" id="due-txt"></div></div></button>
+  <button class="tile" id="go-hard"><div class="em">🎯</div>
+    <div><div class="t">Робота над помилками</div><div class="d" id="hard-txt"></div></div></button>
+  <button class="tile" id="go-list"><div class="em">📋</div>
+    <div><div class="t">Усі слова рівня</div><div class="d">Переглянути, послухати, скинути</div></div></button>
+  <div class="spacer"></div>
+</section>
+
+<!-- ===== КРОСВОРД ===== -->
+<section id="s-cwhome" class="screen">
+  <div class="head"><div style="flex:1"><h1>Кросворд</h1>
+    <div class="sub">Підказка — переклад, відповідь — англійською</div></div></div>
+  <div class="chips" id="chips-cw"></div>
+  <div class="lvcard" id="cw-card">
+    <div class="nm" id="cw-name"></div>
+    <div class="st" id="cw-st"></div>
+  </div>
+  <div class="sect" style="margin-top:4px">Розмір</div>
+  <div class="chips" id="chips-size"></div>
+  <button class="btn primary" id="go-cw" style="margin-top:6px">Новий кросворд</button>
+  <div class="spacer"></div>
+</section>
+
+<!-- ===== СТАТИСТИКА ===== -->
+<section id="s-stats" class="screen">
+  <div class="head"><div style="flex:1"><h1>Статистика</h1><div class="sub" id="st-sub"></div></div></div>
+  <div class="cards4">
+    <div class="kpi"><div class="v" id="k-known">0</div><div class="l">вивчено слів</div></div>
+    <div class="kpi"><div class="v" id="k-streak">0</div><div class="l">днів поспіль</div></div>
+    <div class="kpi"><div class="v" id="k-acc">0%</div><div class="l">влучність</div></div>
+    <div class="kpi"><div class="v" id="k-ans">0</div><div class="l">відповідей</div></div>
+  </div>
+  <div class="sect">Заняття за два тижні</div>
+  <div class="bars" id="bars"></div>
+  <div class="axis"><span id="ax-from"></span><span>сьогодні</span></div>
+  <div class="sect">Рівні</div>
+  <div id="st-levels"></div>
+  <div class="sect">Слова</div>
+  <div class="chips" id="chips-filter"></div>
+  <div id="st-words"></div>
+  <div class="spacer"></div>
+</section>
+
+<!-- ===== ПРОФІЛІ ===== -->
+<section id="s-more" class="screen">
+  <div class="head"><div style="flex:1"><h1>Профіль</h1><div class="sub" id="pf-sub"></div></div></div>
+  <div class="plist" id="pf-list"></div>
+  <button class="btn ghost" id="pf-add" style="margin-top:12px">Додати профіль</button>
+
+  <div class="sect">Налаштування</div>
+  <div class="sect" style="margin-top:4px">Ціль на день</div>
+  <div class="chips" id="chips-goal"></div>
+  <button class="tile" id="m-sound"><div class="em">🔊</div>
+    <div><div class="t">Озвучення</div><div class="d" id="sound-st"></div></div></button>
+  <button class="tile" id="m-export"><div class="em">💾</div>
+    <div><div class="t">Зберегти все у файл</div><div class="d">Усі профілі та прогрес</div></div></button>
+  <button class="tile" id="m-import"><div class="em">📂</div>
+    <div><div class="t">Відновити з файлу</div><div class="d">Замінить поточні дані</div></div></button>
+  <input type="file" id="file-in" accept="application/json" style="display:none">
+  <button class="tile" id="m-reset"><div class="em">🗑️</div>
+    <div><div class="t">Скинути прогрес профілю</div><div class="d" id="reset-st"></div></div></button>
+  <div class="spacer"></div>
+  <div class="sub" style="color:var(--dim);font-size:12.5px;padding-bottom:10px">
+    Слів у словнику: <span id="m-total">0</span>. Дані зберігаються лише на цьому пристрої.
+  </div>
+</section>
+
+<!-- ===== картки ===== -->
+<section id="s-cards" class="screen">
+  <div class="topbar">
+    <button class="icon-btn" id="c-prev">←</button>
+    <div style="flex:1"><div class="track"><span id="c-count"></span>
+      <div class="line"><i id="c-line"></i></div><span id="c-score">0</span></div></div>
+    <button class="icon-btn" id="c-say">🔊</button>
+    <button class="icon-btn" id="c-close">✕</button>
+  </div>
+  <div class="card">
+    <div class="emoji" id="c-emoji"></div>
+    <div class="prompt" id="c-prompt"></div>
+    <div class="hint" id="c-hint"></div>
+    <div class="sentence" id="c-sent"></div>
+    <div class="mnem" id="c-mnem"></div>
+  </div>
+  <div class="row2" style="padding-bottom:10px">
+    <button class="btn ghost sm" id="c-repeat">🔁 Повторювати</button>
+    <button class="btn ghost sm" id="c-known">✅ Знаю добре</button>
+  </div>
+  <div class="opts" id="c-opts"></div>
+  <div id="c-type" style="display:none;padding-bottom:10px">
+    <input id="c-input" placeholder="напиши англійською" autocomplete="off"
+           autocapitalize="off" autocorrect="off" spellcheck="false">
+    <div id="c-feed" class="feed"></div>
+    <div class="row2" style="margin-top:10px">
+      <button class="btn primary" id="c-ok">Перевірити</button>
+      <button class="btn ghost" id="c-skip">Не знаю</button>
+    </div>
+  </div>
+</section>
+
+<!-- ===== знайомство зі словом ===== -->
+<section id="s-intro" class="screen">
+  <div class="topbar">
+    <button class="icon-btn" id="i-prev">←</button>
+    <div style="flex:1"><div class="track"><span id="i-count"></span>
+      <div class="line"><i id="i-line"></i></div><span id="i-badge">нове</span></div></div>
+    <button class="icon-btn" id="i-say">🔊</button>
+    <button class="icon-btn" id="i-close">✕</button>
+  </div>
+  <div class="card">
+    <div class="emoji" id="i-emoji"></div>
+    <div class="prompt" id="i-word"></div>
+    <div class="ua-big" id="i-ua"></div>
+    <div class="sentence" id="i-sent"></div>
+    <div class="mnem" id="i-mnem"></div>
+  </div>
+  <div class="ratewrap">
+    <div class="ratelbl">Наскільки добре вже знаєш це слово?</div>
+    <div class="rate10" id="i-rate"></div>
+  </div>
+  <div style="padding-bottom:12px">
+    <div class="row2">
+      <button class="btn ghost" id="i-note">Своя зачіпка</button>
+      <button class="btn primary" id="i-next">Далі</button>
+    </div>
+  </div>
+</section>
+
+<!-- ===== кросворд ===== -->
+<section id="s-cw" class="screen">
+  <div class="topbar">
+    <button class="icon-btn" id="w-close">✕</button>
+    <div style="flex:1"><div class="track"><span id="w-count"></span>
+      <div class="line"><i id="w-line"></i></div><span id="w-time">0:00</span></div></div>
+    <button class="icon-btn" id="w-hint">💡</button>
+  </div>
+  <div class="cwtop">
+    <span>підказок: <b id="w-hints">0</b></span>
+    <span class="spacer"></span>
+    <button class="btn sm ghost" id="w-check" style="width:auto">Перевірити</button>
+  </div>
+  <div class="cw-wrap" id="cw-wrap">
+    <div id="cw-grid"></div>
+    <input id="cw-cap" class="cw-cap" type="text" inputmode="text" maxlength="1"
+           autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" aria-hidden="true">
+  </div>
+  <div class="clue" id="cw-clue"></div>
+  <div class="kbtoggle" id="kb-toggle">Клавіатура гри ▾</div>
+  <div class="kb" id="cw-kb" style="display:none"></div>
+  <div class="cluelist" id="cw-clues"></div>
+</section>
+
+<!-- ===== список слів ===== -->
+<section id="s-list" class="screen">
+  <div class="topbar">
+    <button class="icon-btn" id="l-close">✕</button>
+    <div><h1 style="font-size:19px;margin:0" id="l-title"></h1><div class="sub" id="l-sub"></div></div>
+  </div>
+  <div class="chips" id="chips-lfilter"></div>
+  <div id="l-body" style="padding-bottom:10px"></div>
+</section>
+
+<!-- ===== підсумок ===== -->
+<section id="s-done" class="screen">
+  <div class="topbar"><button class="icon-btn" id="d-close">✕</button></div>
+  <div class="result">
+    <div class="stars" id="d-stars"></div>
+    <div class="big" id="d-big"></div>
+    <div class="msg" id="d-msg"></div>
+    <div class="note" id="d-note"></div>
+  </div>
+  <div style="padding-bottom:14px"><div class="row2">
+    <button class="btn primary" id="d-again">Ще раз</button>
+    <button class="btn ghost" id="d-back">Завершити</button>
+  </div></div>
+</section>
+
+</div>
+
+<nav>
+  <button data-tab="s-learn" class="on"><span class="ic">🎓</span>Вчити</button>
+  <button data-tab="s-cwhome"><span class="ic">🔤</span>Кросворд</button>
+  <button data-tab="s-stats"><span class="ic">📊</span>Статистика</button>
+  <button data-tab="s-more"><span class="ic">👤</span>Профіль</button>
+</nav>
+<div class="toast" id="toast"></div>
+
+<div class="modal" id="modal-note">
+  <div class="box">
+    <h2 id="nt-title">Своя зачіпка</h2>
+    <div class="sub" style="color:var(--dim);margin-bottom:10px">
+      Асоціація, співзвуччя, картинка в голові — усе, що допоможе пригадати.
+      Своя зачіпка працює краще за чужу.
+    </div>
+    <textarea id="nt-text" class="note-box" maxlength="140"
+      placeholder="напр.: bread — бред, маячня про хліб"></textarea>
+    <div class="row2">
+      <button class="btn primary" id="nt-ok">Зберегти</button>
+      <button class="btn ghost" id="nt-cancel">Скасувати</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="modal">
+  <div class="box">
+    <h2 id="mo-title">Новий профіль</h2>
+    <input id="mo-name" placeholder="Імʼя" maxlength="18" autocomplete="off">
+    <div class="emopick" id="mo-emo"></div>
+    <div class="row2">
+      <button class="btn primary" id="mo-ok">Зберегти</button>
+      <button class="btn ghost" id="mo-cancel">Скасувати</button>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+const LEVELS = [{"id":"a1","code":"A1","name":"Початковий","desc":"Їжа, дім, тварини, природа","color":"var(--sky)","words":[["apple","яблуко","🍎"],["banana","банан","🍌"],["bread","хліб","🍞"],["milk","молоко","🥛"],["water","вода","💧"],["coffee","кава","☕"],["tea","чай","🍵"],["egg","яйце","🥚"],["cheese","сир","🧀"],["meat","м’ясо","🥩"],["rice","рис","🍚"],["soup","суп","🍲"],["salt","сіль","🧂"],["sugar","цукор","🍬"],["honey","мед","🍯"],["butter","масло","🧈"],["cake","торт","🍰"],["ice cream","морозиво","🍦"],["juice","сік","🧃"],["wine","вино","🍷"],["potato","картопля","🥔"],["tomato","помідор","🍅"],["carrot","морква","🥕"],["onion","цибуля","🧅"],["lemon","лимон","🍋"],["grape","виноград","🍇"],["orange","апельсин","🍊"],["nut","горіх","🌰"],["dog","собака","🐕"],["cat","кіт","🐈"],["bird","птах","🐦"],["fish","риба","🐟"],["horse","кінь","🐴"],["cow","корова","🐄"],["pig","свиня","🐖"],["sheep","вівця","🐑"],["bee","бджола","🐝"],["mouse","миша","🐁"],["bear","ведмідь","🐻"],["wolf","вовк","🐺"],["fox","лисиця","🦊"],["frog","жаба","🐸"],["snake","змія","🐍"],["duck","качка","🦆"],["house","будинок","🏠"],["door","двері","🚪"],["key","ключ","🔑"],["window","вікно","🪟"],["bed","ліжко","🛏️"],["chair","стілець","🪑"],["lamp","лампа","💡"],["clock","годинник","🕐"],["mirror","дзеркало","🪞"],["box","коробка","📦"],["brush","щітка","🪥"],["broom","мітла","🧹"],["book","книга","📖"],["pen","ручка","🖊️"],["pencil","олівець","✏️"],["paper","папір","📄"],["bag","сумка","🎒"],["shoe","черевик","👟"],["shirt","сорочка","👕"],["coat","пальто","🧥"],["hat","капелюх","🎩"],["sock","шкарпетка","🧦"],["glove","рукавиця","🧤"],["ring","каблучка","💍"],["car","автомобіль","🚗"],["bus","автобус","🚌"],["train","потяг","🚆"],["plane","літак","✈️"],["bike","велосипед","🚲"],["boat","човен","⛵"],["ship","корабель","🚢"],["truck","вантажівка","🚚"],["sun","сонце","☀️"],["moon","місяць","🌙"],["star","зірка","⭐"],["rain","дощ","🌧️"],["snow","сніг","❄️"],["wind","вітер","🌬️"],["tree","дерево","🌳"],["flower","квітка","🌸"],["grass","трава","🌿"],["leaf","листок","🍃"],["stone","камінь","🪨"],["sand","пісок","🏖️"],["fire","вогонь","🔥"],["ice","лід","🧊"],["sea","море","🌊"],["mountain","гора","⛰️"],["hand","рука","✋"],["eye","око","👁️"],["ear","вухо","👂"],["nose","ніс","👃"],["mouth","рот","👄"],["foot","нога","🦶"],["hair","волосся","💇"],["heart","серце","❤️"],["baby","немовля","👶"],["boy","хлопчик","👦"],["girl","дівчинка","👧"],["family","родина","👨‍👩‍👧"],["red","червоний","🔴"],["blue","синій","🔵"],["green","зелений","🟢"],["black","чорний","⚫"],["white","білий","⚪"],["big","великий","🐘"],["small","маленький","🐭"],["good","добрий","👍"],["bad","поганий","👎"],["hot","гарячий","🔥"],["cold","холодний","❄️"],["happy","щасливий","😊"],["sad","сумний","😢"],["fast","швидкий","⚡"],["slow","повільний","🐢"],["old","старий","🏚️"],["young","молодий","👦"],["new","новий","✨"],["clean","чистий","🧼"],["dirty","брудний","🧹"],["open","відкритий","🚪"],["closed","закритий","🔒"],["full","повний","🥛"],["empty","порожній","📭"],["easy","легкий","👌"],["hard","важкий","💪"],["early","рано","🌅"],["late","пізно","🌙"],["today","сьогодні","📅"],["tomorrow","завтра","➡️"],["yesterday","вчора","⬅️"],["friend","друг","🤝"],["mother","мати","👩"],["father","батько","👨"],["brother","брат","👦"],["sister","сестра","👧"],["child","дитина","🧒"],["man","чоловік","👨"],["woman","жінка","👩"],["watermelon","кавун","🍉"],["strawberry","полуниця","🍓"],["chicken","курка","🐔"],["rabbit","кролик","🐇"],["river","річка","🏞️"],["sunny","сонячний","☀️"],["cloudy","хмарний","☁️"],["road","дорога","🛣️"],["street","вулиця","🏙️"]]},{"id":"a2","code":"A2","name":"Побутовий","desc":"Місто, люди, речі, час","color":"var(--yellow)","words":[["kitchen","кухня","🍳"],["bathroom","ванна","🛁"],["garden","сад","🌷"],["bridge","міст","🌉"],["river","річка","🏞️"],["beach","пляж","🏖️"],["forest","ліс","🌲"],["island","острів","🏝️"],["city","місто","🏙️"],["village","село","🏡"],["hospital","лікарня","🏥"],["school","школа","🏫"],["shop","магазин","🏪"],["market","ринок","🛒"],["bank","банк","🏦"],["hotel","готель","🏨"],["church","церква","⛪"],["castle","замок","🏰"],["factory","завод","🏭"],["office","офіс","🏢"],["station","станція","🚉"],["airport","аеропорт","🛫"],["museum","музей","🏛️"],["library","бібліотека","📚"],["doctor","лікар","🧑‍⚕️"],["teacher","вчитель","🧑‍🏫"],["cook","кухар","🧑‍🍳"],["farmer","фермер","🧑‍🌾"],["driver","водій","🚕"],["police","поліція","👮"],["worker","працівник","👷"],["student","студент","🎓"],["artist","художник","🎨"],["singer","співак","🎤"],["writer","письменник","✍️"],["nurse","медсестра","💉"],["pilot","пілот","🧑‍✈️"],["guest","гість","🛎️"],["money","гроші","💰"],["ticket","квиток","🎫"],["letter","лист","✉️"],["phone","телефон","📱"],["camera","камера","📷"],["computer","комп’ютер","💻"],["map","карта","🗺️"],["luggage","багаж","🧳"],["umbrella","парасоля","☂️"],["glasses","окуляри","👓"],["watch","наручний годинник","⌚"],["gift","подарунок","🎁"],["candle","свічка","🕯️"],["soap","мило","🧼"],["towel","рушник","🧻"],["knife","ніж","🔪"],["spoon","ложка","🥄"],["plate","тарілка","🍽️"],["bottle","пляшка","🍾"],["cup","чашка","🥤"],["basket","кошик","🧺"],["ladder","драбина","🪜"],["rope","мотузка","🪢"],["needle","голка","🪡"],["cloud","хмара","☁️"],["storm","буря","⛈️"],["fog","туман","🌫️"],["rainbow","веселка","🌈"],["season","пора року","🍂"],["summer","літо","🏖️"],["winter","зима","⛄"],["spring","весна","🌷"],["autumn","осінь","🍁"],["morning","ранок","🌅"],["evening","вечір","🌆"],["night","ніч","🌃"],["week","тиждень","🗓️"],["month","місяць","📅"],["year","рік","🎊"],["hour","година","⏰"],["travel","подорож","🧳"],["holiday","відпустка","🌴"],["party","вечірка","🎉"],["wedding","весілля","💒"],["game","гра","🎮"],["music","музика","🎵"],["dance","танець","💃"],["sport","спорт","⚽"],["health","здоров’я","💚"],["food","їжа","🍽️"],["price","ціна","🏷️"],["size","розмір","📏"],["road","дорога","🛣️"],["wall","стіна","🧱"],["roof","дах","🏘️"],["floor","підлога","🔲"],["noise","шум","📢"],["smell","запах","👃"],["taste","смак","👅"],["colour","колір","🎨"],["address","адреса","📍"],["neighbour","сусід","🏠"],["neighbourhood","район","🏘️"],["building","будівля","🏢"],["apartment","квартира","🏠"],["bedroom","спальня","🛏️"],["living room","вітальня","🛋️"],["kitchen table","кухонний стіл","🍽️"],["fridge","холодильник","🧊"],["washing machine","пральна машина","🧺"],["marketplace","торговий майданчик","🛒"],["restaurant","ресторан","🍽️"],["stationery","канцелярські товари","✏️"],["pharmacy","аптека","💊"],["post office","пошта","📮"],["bus stop","автобусна зупинка","🚌"],["platform","платформа","🚉"],["entrance","вхід","🚪"],["exit","вихід","🚪"],["corner","кут","📐"],["traffic","рух","🚗"],["crossing","переїзд","🚸"],["sidewalk","тротуар","🚶"],["direction","напрямок","🧭"],["distance","відстань","📏"],["weather","погода","🌦️"],["temperature","температура","🌡️"],["sunrise","схід сонця","🌅"],["sunset","захід сонця","🌇"],["windy","вітряний","🌬️"],["rainy","дощовий","🌧️"],["snowy","сніжний","❄️"],["busy","зайнятий","🏃"],["quiet","тихий","🤫"],["noisy","шумний","📢"],["expensive","дорогий","💰"],["cheap","дешевий","🏷️"],["useful","корисний","🛠️"],["important","важливий","⭐"],["possible","можливий","✅"],["necessary","необхідний","📌"],["available","доступний","🟢"],["different","різний","🔀"],["similar","схожий","🪞"],["usually","зазвичай","🔁"],["sometimes","іноді","🔄"],["often","часто","📆"],["never","ніколи","🚫"],["already","вже","✔️"]]},{"id":"b1","code":"B1","name":"Середній","desc":"Робота, наука, поняття","color":"var(--coral)","words":[["challenge","виклик","🧗"],["advantage","перевага","➕"],["drawback","недолік","➖"],["judge","суддя","👨‍⚖️"],["guard","охоронець","🛡️"],["safety","безпека","🦺"],["danger","небезпека","⚠️"],["warning","попередження","🚨"],["risk","ризик","🎲"],["schedule","розклад","📅"],["deadline","термін","⏰"],["meeting","зустріч","🤝"],["contract","договір","📜"],["salary","зарплата","💵"],["invoice","рахунок","🧾"],["budget","бюджет","🧮"],["payment","платіж","💳"],["delivery","доставка","📦"],["storage","сховище","🗄️"],["supply","постачання","🚛"],["demand","попит","📈"],["customer","замовник","🙋"],["supplier","постачальник","🏭"],["employee","працівник","🧑‍💼"],["manager","керівник","👔"],["training","навчання","🎓"],["experience","досвід","🧠"],["skill","навичка","🎯"],["career","кар’єра","🪜"],["tool","інструмент","🔧"],["hammer","молоток","🔨"],["gear","шестерня","⚙️"],["magnet","магніт","🧲"],["scale","ваги","⚖️"],["ruler","лінійка","📏"],["screw","гвинт","🔩"],["wire","дріт","🧵"],["research","дослідження","🔬"],["medicine","медицина","💊"],["injury","травма","🩹"],["laboratory","лабораторія","🧪"],["satellite","супутник","🛰️"],["rocket","ракета","🚀"],["telescope","телескоп","🔭"],["engine","двигун","🛞"],["machine","машина","🖨️"],["device","пристрій","📟"],["material","матеріал","🧱"],["sample","зразок","🧫"],["power","потужність","⚡"],["growth","зростання","📈"],["decline","спад","📉"],["balance","рівновага","☯️"],["speed","швидкість","🏎️"],["weight","вага","🏋️"],["level","рівень","🎚️"],["signal","сигнал","📶"],["network","мережа","🕸️"],["report","звіт","📋"],["search","пошук","🔍"],["idea","ідея","💡"],["question","питання","❓"],["answer","відповідь","✅"],["mistake","помилка","❌"],["repair","ремонт","🛠️"],["reason","причина","🧩"],["result","результат","🏁"],["purpose","мета","🎯"],["method","метод","🧭"],["change","зміна","🔄"],["choice","вибір","🔀"],["chance","можливість","🍀"],["effort","зусилля","💪"],["progress","прогрес","📊"],["quality","якість","💎"],["quantity","кількість","🔢"],["value","цінність","💠"],["rule","правило","📏"],["law","закон","⚖️"],["right","право","✊"],["duty","обов’язок","📌"],["advice","порада","💬"],["message","повідомлення","📨"],["news","новини","📰"],["story","історія","📕"],["memory","пам’ять","🧠"],["dream","мрія","💭"],["fear","страх","😨"],["hope","надія","🕊️"],["achieve","досягати","🏆"],["improve","покращувати","📈"],["develop","розвивати","🌱"],["increase","збільшувати","⬆️"],["reduce","зменшувати","⬇️"],["provide","забезпечувати","📦"],["require","вимагати","📌"],["allow","дозволяти","✅"],["avoid","уникати","↩️"],["include","включати","➕"],["depend","залежати","🔗"],["consider","розглядати","🤔"],["compare","порівнювати","⚖️"],["describe","описувати","📝"],["explain","пояснювати","💡"],["suggest","пропонувати","💬"],["decide","вирішувати","🎯"],["agree","погоджуватися","🤝"],["refuse","відмовлятися","🙅"],["manage","керувати","👔"],["organize","організовувати","🗂️"],["prepare","готувати","🛠️"],["solve","вирішувати проблему","🧩"],["check","перевіряти","🔎"],["measure","вимірювати","📏"],["calculate","обчислювати","🧮"],["connect","підключати","🔌"],["control","керувати","🎛️"],["operate","експлуатувати","⚙️"],["install","встановлювати","🔧"],["remove","видаляти","🗑️"],["replace","замінювати","🔄"],["protect","захищати","🛡️"],["prevent","запобігати","🚧"],["support","підтримувати","🤝"],["maintain","підтримувати","🧰"],["test","тестувати","🧪"],["monitor","контролювати","👀"],["connectivity","з'єднання","🔗"],["performance","продуктивність","📊"],["capacity","потужність","🔋"],["condition","стан","📋"],["feature","функція","✨"],["failure","відмова","❌"],["fault","несправність","⚠️"],["cause","причина","🧩"],["effect","вплив","➡️"],["solution","рішення","💡"],["issue","проблема","⚠️"],["process","процес","⚙️"]]},{"id":"b2","code":"B2","name":"Вищий","desc":"Процеси й абстракції","color":"var(--lilac)","words":[["merit","заслуга","🏅"],["flaw","вада","🕳️"],["scope","обсяг","📐"],["trend","тенденція","📈"],["bias","упередження","🎭"],["outlook","перспектива","🔭"],["margin","запас","📏"],["peak","пік","🗻"],["draft","чернетка","📝"],["clause","пункт","📄"],["breach","порушення","🚫"],["waiver","звільнення від вимоги","🎫"],["audit","аудит","🔍"],["asset","актив","🏦"],["debt","борг","💳"],["yield","дохідність","🌾"],["stake","частка","🥧"],["bond","облігація","📜"],["grant","грант","🎁"],["quota","квота","🔢"],["surge","сплеск","⚡"],["slump","різкий спад","📉"],["boost","підйом","🚀"],["curb","стримування","🛑"],["efficiency","ефективність","📊"],["reliability","надійність","🛡️"],["maintenance","обслуговування","🧰"],["inspection","перевірка","🔎"],["compliance","відповідність","📋"],["emission","викид","🏭"],["consumption","споживання","🔌"],["threshold","поріг","🚧"],["accuracy","точність","🎯"],["sequence","послідовність","🔢"],["estimate","оцінка","🧮"],["forecast","прогноз","🌦️"],["agreement","угода","🤝"],["approval","схвалення","👍"],["rejection","відмова","👎"],["evidence","доказ","🔍"],["assumption","припущення","🤔"],["consequence","наслідок","➡️"],["priority","пріоритет","🥇"],["resource","ресурс","🛢️"],["shortage","нестача","📉"],["surplus","надлишок","📈"],["adjustment","коригування","🎛️"],["boundary","межа","🚩"],["framework","структура","🏗️"],["insight","розуміння","💡"],["persistence","наполегливість","🧗"],["awareness","обізнаність","👁️"],["negotiation","переговори","💬"],["liability","відповідальність","⚖️"],["allocation","розподіл","🧩"],["disruption","збій","💥"],["resilience","стійкість","🌱"],["transition","перехід","🔄"],["expenditure","витрати","💸"],["revenue","дохід","💰"],["sustainability","сталість","♻️"],["compromise","компроміс","🤲"],["commitment","зобов’язання","🔒"],["achievement","досягнення","🏆"],["statement","заява","📢"],["proposal","пропозиція","📝"],["requirement","вимога","📌"],["restriction","обмеження","⛔"],["permission","дозвіл","🎟️"],["procedure","процедура","📑"],["guideline","настанова","🧭"],["standard","стандарт","📐"],["benchmark","еталон","🎚️"],["deviation","відхилення","📐"],["tolerance","допуск","📏"],["calibration","калібрування","🎛️"],["validation","валідація","✔️"],["assessment","оцінювання","🧪"],["observation","спостереження","👀"],["conclusion","висновок","🏁"],["hypothesis","гіпотеза","💭"],["investment","інвестиція","🏦"],["profit","прибуток","📈"],["loss","збиток","📉"],["warranty","гарантія","🧾"],["insurance","страхування","🛡️"],["shipment","відвантаження","🚢"],["inventory","запаси","📦"],["workflow","робочий процес","🔁"],["bottleneck","вузьке місце","🍾"],["downtime","простій","⏸️"],["uptime","час доступності","▶️"],["lifespan","строк служби","⏳"],["redundancy","резервування","♻️"],["backup","резервна копія","🗄️"],["recovery","відновлення","🔧"],["shortcoming","недолік","🕳️"],["ambiguity","неоднозначність","🌀"],["consistency","узгодженість","🧷"],["transparency","прозорість","🪟"],["accountability","підзвітність","📋"],["acquire","набувати","📥"],["adapt","адаптуватися","🔄"],["allocate","розподіляти","🧩"],["anticipate","передбачати","🔭"],["clarify","уточнювати","🔎"],["derive","отримувати","📤"],["distinguish","розрізняти","⚖️"],["enhance","підвищувати","📈"],["ensure","забезпечувати","🛡️"],["exceed","перевищувати","⬆️"],["implement","впроваджувати","⚙️"],["imply","передбачати","💭"],["justify","обґрунтовувати","📚"],["obtain","отримувати","📥"],["perceive","сприймати","👁️"],["predict","прогнозувати","🔮"],["pursue","прагнути","🎯"],["retain","зберігати","📦"],["reveal","виявляти","🔍"],["trigger","спричиняти","⚡"],["undergo","зазнавати","🔄"],["verify","перевіряти","✔️"],["withdraw","відкликати","↩️"],["accelerate","прискорювати","🏎️"],["constrain","обмежувати","⛔"],["coordinate","координувати","🧭"],["differentiate","розрізняти","🔬"],["facilitate","полегшувати","🤝"],["generate","створювати","⚡"],["integrate","інтегрувати","🔗"],["optimize","оптимізувати","📈"],["prioritize","визначати пріоритети","🥇"],["quantify","кількісно оцінювати","🔢"],["refine","удосконалювати","✨"],["resolve","усувати","🧩"],["sustain","підтримувати","♻️"],["transform","перетворювати","🔄"],["uncertainty","невизначеність","❓"],["variability","мінливість","〰️"],["vulnerability","вразливість","⚠️"],["constraint","обмеження","⛓️"],["criterion","критерій","📏"],["indicator","показник","📊"],["parameter","параметр","🎛️"],["correlation","взаємозв’язок","🔗"],["distribution","розподіл","📊"],["exposure","вплив","🌐"],["feasibility","здійсненність","✅"],["mitigation","пом’якшення","🛡️"],["regulation","регулювання","📜"]]},{"id":"tech","code":"⚡","name":"Технічна","desc":"Енергетика, автоматика, зв’язок","color":"#8fd694","words":[["voltage","напруга","⚡"],["current","струм","🔌"],["resistance","опір","🧱"],["frequency","частота","〰️"],["phase","фаза","🔺"],["neutral","нейтраль","⚪"],["earthing","заземлення","⛓️"],["insulation","ізоляція","🧤"],["conductor","провідник","🧵"],["cable","кабель","🪢"],["busbar","шина","🪝"],["terminal","клема","🔗"],["fuse","запобіжник","🧨"],["breaker","вимикач","🔘"],["contactor","контактор","🔲"],["switchgear","розподільна установка","🎛️"],["transformer","трансформатор","🏭"],["winding","обмотка","🌀"],["inductance","індуктивність","🔄"],["capacitance","ємність","🪣"],["battery","акумулятор","🔋"],["cell","комірка","🔋"],["rack","стійка","🗄️"],["charge","заряд","🔌"],["discharge","розряд","🪫"],["inverter","інвертор","🔁"],["converter","перетворювач","♻️"],["generator","генератор","🌀"],["turbine","турбіна","💨"],["grid","мережа","🕸️"],["load","навантаження","📦"],["feeder","фідер (лінія живлення)","🔗"],["substation","підстанція","🏗️"],["busbar section","секція шин","🧱"],["island mode","острівний режим","🏝️"],["sensor","датчик","📡"],["gauge","манометр","⏲️"],["valve","клапан","🚰"],["pump","насос","⛽"],["relay","реле","🔀"],["controller","контролер","🖲️"],["actuator","привід","🦾"],["encoder","енкодер","🔢"],["setpoint","уставка","🎚️"],["feedback","зворотний зв’язок","↩️"],["deadband","зона нечутливості","🔇"],["interlock","блокування","🔒"],["bypass","обхід","↪️"],["override","примусове керування","✋"],["protocol","протокол","📜"],["register","регістр","🗂️"],["polling","опитування","🔄"],["timeout","тайм-аут","⏳"],["gateway","шлюз","🚪"],["firmware","прошивка","💾"],["checksum","контрольна сума","🔢"],["baud rate","швидкість передачі","📶"],["master","ведучий","👑"],["slave","підлеглий","🔗"],["packet","пакет","📦"],["latency","затримка","⏱️"],["bandwidth","пропускна здатність","📶"],["uplink","висхідний канал","⬆️"],["downlink","низхідний канал","⬇️"],["alarm","аварійний сигнал","🚨"],["fault","несправність","⚠️"],["trip","спрацювання захисту","⛔"],["shutdown","зупинка","🛑"],["startup","пуск","▶️"],["standby","очікування","⏸️"],["reset","скидання","🔄"],["meter","лічильник","⏱️"],["reading","показання","👓"],["logbook","журнал","📔"],["shift","зміна","🕗"],["commissioning","пусконалагодження","🔧"],["outage","знеструмлення","🕳️"],["derating","зниження потужності","📉"],["overload","перевантаження","🥵"],["overvoltage","перенапруга","📛"],["undervoltage","зниження напруги","📉"],["short circuit","коротке замикання","💥"],["leakage","витік","💧"],["harmonics","гармоніки","🌊"],["spare part","запасна частина","🔩"],["redundant unit","резервний блок","♊"],["power factor","коефіцієнт потужності","⚡"],["active power","активна потужність","🔋"],["reactive power","реактивна потужність","〰️"],["apparent power","повна потужність","📊"],["energy","енергія","⚡"],["frequency converter","перетворювач частоти","🔄"],["power supply","джерело живлення","🔌"],["power meter","лічильник потужності","📟"],["multimeter","мультиметр","🔧"],["oscilloscope","осцилограф","📈"],["voltage transformer","трансформатор напруги","🏭"],["current transformer","трансформатор струму","🌀"],["circuit breaker","автоматичний вимикач","🔘"],["disconnect switch","роз'єднувач","🔌"],["surge arrester","обмежувач перенапруги","⚡"],["protection relay","реле захисту","🛡️"],["overcurrent","надструм","⚠️"],["ground fault","замикання на землю","🌍"],["arc fault","дугове замикання","🔥"],["harmonic","гармоніка","〰️"],["resonance","резонанс","〰️"],["transient","перехідний процес","⚡"],["power quality","якість електроенергії","📊"],["energy storage","накопичення енергії","🔋"],["battery management system","система керування батареєю","🔋"],["state of charge","стан заряду","🔋"],["state of health","стан батареї","❤️"],["cell voltage","напруга комірки","🔋"],["battery rack","батарейна стійка","🗄️"],["inverter control","керування інвертором","🎛️"],["grid connection","приєднання до мережі","🔗"],["power plant","електростанція","🏭"],["wind farm","вітрова електростанція","🌬️"],["solar plant","сонячна електростанція","☀️"],["photovoltaic","фотовольтаїчний","☀️"],["transformer oil","трансформаторна олива","🛢️"],["cooling system","система охолодження","❄️"],["ventilation","вентиляція","💨"],["pressure","тиск","⏲️"],["flow","витрата","🌊"],["temperature sensor","датчик температури","🌡️"],["pressure sensor","датчик тиску","📡"],["Modbus","Modbus","🔗"],["IEC 61850","IEC 61850","📡"],["IEC 60870-5-104","IEC 60870-5-104","📡"],["SCADA","SCADA","🖥️"],["remote control","дистанційне керування","🖥️"]]}];
+const SENT = {"apple":"She eats an {} for breakfast.","banana":"The monkey took my {}.","bread":"We buy fresh {} every morning.","milk":"Pour the {} into the cup.","water":"Drink more {} when it is hot.","coffee":"He cannot start work without {}.","tea":"My mother drinks green {}.","egg":"I want one boiled {}.","cheese":"Put some {} on the bread.","meat":"This {} is too salty.","rice":"Cook the {} for ten minutes.","soup":"The {} is still hot.","salt":"Add a little {} to the soup.","sugar":"No {} in my coffee, please.","honey":"Bees make {} in summer.","butter":"Spread the {} on warm toast.","cake":"She baked a {} for his birthday.","ice cream":"The children want {} after dinner.","juice":"A glass of orange {}, please.","wine":"They opened a bottle of red {}.","potato":"Peel the {} before cooking.","tomato":"This {} is red and ripe.","carrot":"The rabbit is eating a {}.","onion":"Cutting an {} makes me cry.","lemon":"Add {} juice to the fish.","grape":"Every {} in the bunch is sweet.","orange":"Peel the {} for the child.","nut":"A squirrel hid the {} under a tree.","dog":"Our {} barks at strangers.","cat":"The {} sleeps on the warm chair.","bird":"A small {} sits on the wire.","fish":"He caught a big {} in the river.","horse":"The {} runs across the field.","cow":"That {} gives a lot of milk.","pig":"The {} is lying in the mud.","sheep":"We counted every {} in the field.","bee":"A {} landed on the flower.","mouse":"The {} ran under the cupboard.","bear":"A brown {} lives in this forest.","wolf":"The {} howled all night.","fox":"A red {} crossed the road.","frog":"The {} jumped into the pond.","snake":"A long {} moved through the grass.","duck":"The {} swims with her ducklings.","house":"Their {} stands near the river.","door":"Please close the {} quietly.","key":"I lost the {} to my flat.","window":"Open the {}, it is hot here.","bed":"He made his {} before breakfast.","chair":"Sit on this {}, it is softer.","lamp":"Turn on the {}, it is dark.","clock":"The {} on the wall is slow.","mirror":"She looked in the {} and smiled.","box":"Put the tools back in the {}.","brush":"Clean your teeth with this {}.","broom":"Sweep the floor with the {}.","book":"This {} has four hundred pages.","pen":"May I borrow your {}?","pencil":"Draw the line with a {}.","paper":"Write it on a sheet of {}.","bag":"My {} is heavy today.","shoe":"One {} is under the bed.","shirt":"Your {} needs ironing.","coat":"Take your {}, it is cold outside.","hat":"He wears a black {} in winter.","sock":"I cannot find the second {}.","glove":"She lost one leather {}.","ring":"The gold {} was his grandmother's.","car":"Their {} broke down on the way.","bus":"The {} to the station leaves at six.","train":"Our {} arrives in ten minutes.","plane":"The {} landed in heavy rain.","bike":"He rides his {} to work.","boat":"A small {} crossed the lake.","ship":"The {} carries grain to Egypt.","truck":"A heavy {} blocked the road.","sun":"The {} rises early in June.","moon":"The full {} was very bright.","star":"The first {} appeared in the sky.","rain":"The {} stopped after lunch.","snow":"Fresh {} covered the garden.","wind":"A cold {} blew from the north.","tree":"This {} is older than the house.","flower":"He gave her a single {}.","grass":"The {} needs cutting again.","leaf":"A yellow {} fell on the path.","stone":"He threw a {} into the water.","sand":"The {} was hot under our feet.","fire":"They sat around the {} all evening.","ice":"The {} on the road is dangerous.","sea":"The {} is calm this morning.","mountain":"That {} is covered with snow.","hand":"Wash your {} before dinner.","eye":"Something got into my {}.","ear":"My left {} hurts.","nose":"The cold made his {} red.","mouth":"Do not speak with your {} full.","foot":"My right {} is swollen.","hair":"Her {} is longer than mine.","heart":"His {} beats too fast.","baby":"The {} slept through the night.","boy":"That {} lives next door.","girl":"A small {} was feeding the ducks.","family":"The whole {} came for dinner.","kitchen":"She is cooking in the {}.","bathroom":"The {} needs new tiles.","garden":"They grow tomatoes in the {}.","bridge":"The old {} is closed for repair.","river":"The {} floods every spring.","beach":"The {} was empty in the morning.","forest":"We walked through the {} for hours.","island":"The {} can be reached by ferry.","city":"This {} grows very fast.","village":"He was born in a small {}.","hospital":"She works at the city {}.","school":"The {} starts at half past eight.","shop":"The {} closes at nine.","market":"We buy vegetables at the {}.","bank":"The {} is closed on Sunday.","hotel":"Our {} is near the station.","church":"The {} was built in 1790.","castle":"The {} stands above the town.","factory":"He works at a paper {}.","office":"Our {} is on the third floor.","station":"Meet me at the {} at seven.","airport":"The {} was closed because of fog.","museum":"The {} is free on Wednesdays.","library":"Return the books to the {}.","doctor":"The {} will see you now.","teacher":"Our English {} is very patient.","cook":"The {} prepares meals for eighty people.","farmer":"The {} sold his last cow.","driver":"The bus {} knows every street.","police":"The {} arrived in five minutes.","worker":"Every {} must wear a helmet.","student":"She is a second-year {}.","artist":"The {} painted the whole wall.","singer":"That {} has an unusual voice.","writer":"The {} finished her third novel.","nurse":"The {} changed the bandage.","pilot":"The {} announced a short delay.","guest":"Our {} arrives tomorrow evening.","money":"He spent all his {} on books.","ticket":"I bought a return {}.","letter":"Her {} arrived three weeks late.","phone":"My {} is out of battery.","camera":"The {} shows the whole yard.","computer":"The {} restarts by itself.","map":"Look at the {} before you drive.","luggage":"Leave your {} at the desk.","umbrella":"Take an {}, it will rain.","glasses":"He cannot read without his {}.","watch":"My {} is two minutes fast.","gift":"This {} is for your daughter.","candle":"Light a {} if the power goes off.","soap":"There is no {} in the bathroom.","towel":"Bring a clean {}, please.","knife":"This {} is not sharp enough.","spoon":"Stir it with a wooden {}.","plate":"Put the fish on a warm {}.","bottle":"Open the {} of mineral water.","cup":"Another {} of tea, please.","basket":"The {} is full of apples.","ladder":"Hold the {} while I climb.","rope":"Tie the boat with this {}.","needle":"She threaded the {} quickly.","cloud":"A dark {} covered the sun.","storm":"The {} broke three trees.","fog":"Thick {} delayed all flights.","rainbow":"A bright {} appeared after the rain.","season":"Autumn is my favourite {}.","summer":"Last {} was unusually dry.","winter":"This {} came early.","spring":"In {} the garden looks best.","autumn":"In {} the leaves turn yellow.","morning":"Call me tomorrow {}.","evening":"We met yesterday {}.","night":"He worked all {}.","week":"See you next {}.","month":"The report is due next {}.","year":"Prices rose again this {}.","hour":"The meeting lasted one {}.","travel":"Air {} became expensive.","holiday":"They spent the {} in the mountains.","party":"The {} lasted until midnight.","wedding":"Their {} is in September.","game":"The {} ended in a draw.","music":"Turn the {} down, please.","dance":"The first {} was a waltz.","sport":"Swimming is a healthy {}.","health":"His {} improved after the operation.","food":"The {} here is simple but good.","price":"The {} of bread went up.","size":"Do you have this in my {}?","road":"The {} to the village is narrow.","wall":"Hang the picture on that {}.","roof":"The {} leaks after heavy rain.","floor":"The kitchen {} is still wet.","noise":"The {} from the street woke me.","smell":"There is a strange {} in the room.","taste":"The soup has a sharp {}.","colour":"What {} is your new car?","challenge":"Learning a language is a real {}.","advantage":"Speaking English is a big {} at work.","drawback":"The main {} is the price.","judge":"The {} postponed the hearing.","guard":"The {} checks every visitor.","safety":"{} comes before speed.","danger":"There is no {} if you follow the rules.","warning":"He ignored the first {}.","risk":"We cannot take that {}.","schedule":"The {} changed again this week.","deadline":"We missed the {} by two days.","meeting":"The {} was moved to Friday.","contract":"Read the {} before you sign.","salary":"His {} was raised in March.","invoice":"Send the {} by email.","budget":"The {} for repairs is too small.","payment":"The {} arrived a week late.","delivery":"{} takes three working days.","storage":"We rented extra {} space.","supply":"The {} of spare parts stopped.","demand":"{} for batteries is growing.","customer":"The {} asked for a refund.","supplier":"Our {} raised the prices.","employee":"Every {} gets safety training.","manager":"The {} approved the plan.","training":"New staff need two weeks of {}.","experience":"She has ten years of {}.","skill":"Reading drawings is a useful {}.","career":"He changed his {} at forty.","tool":"Choose the right {} for the job.","hammer":"Hit the nail with the {}.","gear":"One {} in the box is broken.","magnet":"A strong {} holds the door.","scale":"Put the parcel on the {}.","ruler":"Measure it with a steel {}.","screw":"Tighten the last {}.","wire":"The {} is too thin for this load.","research":"Their {} took three years.","medicine":"Take the {} after meals.","injury":"The {} kept him off work.","laboratory":"Samples are tested in the {}.","satellite":"The {} sends data every hour.","rocket":"The {} launched at dawn.","telescope":"Through the {} we saw Saturn.","engine":"The {} makes a strange noise.","machine":"This {} needs oil.","device":"The {} runs on two batteries.","sample":"Send one {} to the laboratory.","power":"The {} of the pump is too low.","growth":"{} slowed in the second quarter.","decline":"A sharp {} followed the crisis.","balance":"Keep the {} between work and rest.","speed":"Reduce your {} near the school.","weight":"The {} of the load exceeds the limit.","level":"The water {} is rising.","signal":"The {} is weak in the basement.","network":"The whole {} went down.","report":"The {} is due on Monday.","search":"The {} for the fault took hours.","idea":"That is a good {}.","question":"May I ask one more {}?","answer":"His {} surprised everybody.","mistake":"It was an expensive {}.","repair":"The {} will take two days.","reason":"Give me one good {}.","result":"The {} was better than expected.","purpose":"What is the {} of this test?","method":"We tried a different {}.","change":"The {} takes effect in May.","choice":"You have no other {}.","chance":"There is still a {} to fix it.","effort":"It took a lot of {}.","progress":"He made good {} this month.","quality":"The {} of the steel is poor.","quantity":"Order a smaller {} next time.","value":"The {} of the house has doubled.","rule":"This {} applies to everyone.","law":"The new {} takes effect in January.","right":"You have the {} to refuse.","duty":"It is your {} to report it.","advice":"Thank you for the {}.","message":"Leave a {} after the beep.","news":"The {} spread quickly.","story":"He told the same {} again.","memory":"My {} for names is poor.","dream":"Her {} is to work abroad.","fear":"His {} of heights is serious.","hope":"There is still {}.","merit":"The plan has one clear {}.","flaw":"The design has a serious {}.","scope":"That is outside the {} of this contract.","trend":"The {} towards remote work continues.","bias":"The study shows a clear {}.","margin":"Leave a {} for error.","peak":"Demand reaches its {} in winter.","draft":"Send me the first {} by Friday.","clause":"Check the last {} of the agreement.","breach":"That is a {} of contract.","waiver":"They signed a {} of liability.","audit":"The annual {} starts on Monday.","asset":"Experience is his greatest {}.","debt":"The company repaid its {}.","yield":"The {} was lower than expected.","stake":"He holds a ten percent {}.","bond":"The {} matures in five years.","grant":"They received a research {}.","quota":"The import {} was reduced.","surge":"A {} in demand followed the news.","slump":"Sales went into a {}.","boost":"The order gave us a welcome {}.","curb":"New rules {} excessive spending.","outlook":"The {} for next year is uncertain.","efficiency":"The change improved {} by a fifth.","reliability":"{} matters more than speed here.","maintenance":"Regular {} prevents breakdowns.","inspection":"The annual {} found two faults.","compliance":"{} with the standard is obligatory.","emission":"{} limits became stricter.","consumption":"Fuel {} dropped noticeably.","threshold":"The alarm {} is set too low.","accuracy":"The {} of the meter is one percent.","sequence":"Follow the {} exactly.","estimate":"His {} was close to the final figure.","forecast":"The weather {} was wrong again.","agreement":"We reached an {} after long talks.","approval":"The project awaits final {}.","rejection":"His {} of the offer surprised us.","evidence":"There is no {} of a fault.","assumption":"Your {} turned out to be wrong.","consequence":"He accepted the {} of his decision.","priority":"Safety is the first {}.","resource":"Water is a limited {}.","shortage":"There is a {} of qualified staff.","surplus":"The {} was sold abroad.","adjustment":"A small {} solved the problem.","boundary":"The fence marks the {}.","framework":"The law sets a clear {}.","insight":"His {} saved us a week.","persistence":"{} matters more than talent.","awareness":"Safety {} improved after the training.","negotiation":"The {} lasted six hours.","liability":"The {} lies with the supplier.","allocation":"The {} of funds was revised.","disruption":"The storm caused serious {}.","resilience":"The system showed great {}.","transition":"The {} to the new system took a year.","expenditure":"Capital {} was cut by half.","revenue":"{} grew for the third year.","sustainability":"{} is now part of every project.","compromise":"Both sides accepted a {}.","commitment":"It requires a long-term {}.","achievement":"That was a remarkable {}.","statement":"His {} contradicted the report.","proposal":"We rejected their first {}.","requirement":"This is a legal {}.","restriction":"The {} applies at night.","permission":"You need written {}.","procedure":"Follow the emergency {}.","guideline":"The new {} explains the process.","standard":"The cable meets the European {}.","benchmark":"We use last year as a {}.","deviation":"Any {} must be reported.","tolerance":"The {} is one millimetre.","calibration":"The {} is done every year.","validation":"The method requires {}.","assessment":"The risk {} was completed.","observation":"His {} proved correct.","conclusion":"The {} of the report is clear.","hypothesis":"The {} was not confirmed.","investment":"The {} paid off in two years.","profit":"{} fell despite higher sales.","loss":"The {} was covered by insurance.","warranty":"The {} expires in December.","insurance":"The {} covers flood damage.","shipment":"The {} was delayed by customs.","inventory":"The {} is checked twice a year.","workflow":"The new {} saves two hours.","bottleneck":"Testing became the main {}.","downtime":"Unplanned {} costs a fortune.","uptime":"The {} of the system is 99 percent.","lifespan":"The {} of the battery is ten years.","redundancy":"{} protects against single failures.","backup":"Keep a {} of the settings.","recovery":"{} took three hours.","shortcoming":"The report mentions one {}.","ambiguity":"The wording leaves some {}.","consistency":"{} of results is essential.","transparency":"They promised full {}.","accountability":"Clear {} prevents disputes.","voltage":"The {} dropped below the limit.","current":"Measure the {} in each phase.","resistance":"The {} of the winding increased.","frequency":"The {} stays at fifty hertz.","phase":"Check the {} sequence before starting.","neutral":"The {} conductor must not be broken.","earthing":"Poor {} caused the fault.","insulation":"The {} resistance is too low.","conductor":"Each {} carries the same load.","cable":"The {} runs under the floor.","busbar":"The {} feeds all four panels.","terminal":"Tighten every {} once a year.","fuse":"The {} blew again this morning.","breaker":"The {} tripped during the storm.","contactor":"The {} failed to close.","switchgear":"The {} was replaced last summer.","transformer":"The {} is overloaded at noon.","winding":"One {} shows higher temperature.","inductance":"The {} of the coil was measured.","capacitance":"The {} affects the resonance.","battery":"The {} is charged overnight.","cell":"One {} shows a lower voltage.","rack":"Each {} holds twenty modules.","charge":"The {} takes about four hours.","discharge":"Deep {} shortens battery life.","inverter":"The {} converts direct current to alternating.","converter":"The {} works at high efficiency.","generator":"The diesel {} started automatically.","turbine":"The {} runs at constant speed.","grid":"The plant was connected to the {}.","load":"The {} peaks in the evening.","feeder":"The {} supplies the whole workshop.","substation":"The {} was built in 2019.","sensor":"The {} sends a signal every second.","gauge":"The {} shows six bar.","valve":"Close the {} before draining.","pump":"The {} runs only when needed.","relay":"The {} operated in forty milliseconds.","controller":"The {} restarts after a power cut.","actuator":"The {} moves the damper.","encoder":"The {} counts every revolution.","setpoint":"Change the {} to five hundred kilowatts.","feedback":"The {} loop keeps it stable.","deadband":"A small {} prevents hunting.","interlock":"The {} prevents a wrong operation.","bypass":"Open the {} during maintenance.","override":"Manual {} is allowed only locally.","protocol":"The device speaks the Modbus {}.","register":"Read {} forty for the frequency.","polling":"{} every second is enough.","timeout":"A {} means the link is lost.","gateway":"The {} translates between protocols.","firmware":"The {} update fixed the bug.","checksum":"A wrong {} rejects the frame.","master":"The {} sends a request first.","packet":"The {} was lost on the way.","latency":"{} over the radio link is high.","bandwidth":"{} is enough for ten devices.","uplink":"The {} failed for three minutes.","downlink":"The {} works over the fibre.","alarm":"The {} sounded at midnight.","fault":"The {} cleared by itself.","trip":"A protection {} stopped the unit.","shutdown":"An orderly {} takes ten minutes.","startup":"{} is blocked below zero degrees.","standby":"The unit went to {} automatically.","reset":"Press {} after clearing the fault.","meter":"The {} reads two megawatt hours.","reading":"Record the {} every shift.","logbook":"Write it in the {}.","shift":"The night {} reported the fault.","commissioning":"{} starts next Monday.","outage":"The {} lasted four hours.","derating":"{} begins above forty degrees.","overload":"{} protection operated correctly.","overvoltage":"{} damaged two modules.","undervoltage":"{} blocked the start.","leakage":"{} current exceeded the limit.","harmonics":"{} distort the voltage waveform.","spare part":"We keep one {} in stock.","redundant unit":"The {} takes over automatically.","material":"Choose a {} that resists heat.","busbar section":"The {} was isolated for repair.","island mode":"The plant switched to {} automatically.","baud rate":"Set the {} to nine thousand six hundred.","slave":"Each {} answers only when asked.","short circuit":"A {} destroyed the cable."};
+const AVATARS = ["🙂","🦊","🐻","🐱","🐼","🦁","🐧","🦉","🐢","🚀","⚡","🌟","🎓","🔧","🎯","🍀"];
+
+/* ==================== сховище й профілі ==================== */
+const ROOT = "slova.app";
+const DAY = 86400000, STEPS = [0,1,2,4,8,16,32];
+
+function blank(name, ava){
+  return {name:name||"Учень", ava:ava||"🙂",
+          words:{}, stats:{answers:0,right:0,cw:0,cwBest:{}},
+          days:{}, notes:{}, sound:true, level:"a1", size:"m",
+          goal:20, session:null, created:Date.now()};
+}
+function loadAll(){
+  let a=null;
+  try{ a=JSON.parse(localStorage.getItem(ROOT)||"null"); }catch(e){}
+  if(!a||!a.profiles||!Object.keys(a.profiles).length){
+    // перенос зі старих версій
+    let old=null;
+    for(const k of ["slova.v2","slova.v1"]){
+      try{ const d=JSON.parse(localStorage.getItem(k)||"null"); if(d&&d.words){ old=d; break; } }catch(e){}
+    }
+    const id="p"+Date.now();
+    const p=blank("Учень","🙂");
+    if(old){
+      p.words=old.words||{}; p.stats=Object.assign(p.stats, old.stats||{});
+      p.sound=(old.sound!==false); p.level=old.level||"a1";
+      if(Array.isArray(old.days)){ old.days.forEach(t=>p.days[t]=(p.days[t]||0)+10); }
+      else p.days=old.days||{};
+    }
+    a={profiles:{}, active:id};
+    a.profiles[id]=p;
+  }
+  for(const id in a.profiles){
+    const p=a.profiles[id];
+    p.words=p.words||{}; p.days=p.days||{};
+    p.stats=Object.assign({answers:0,right:0,cw:0,cwBest:{}}, p.stats||{});
+    p.stats.cwBest=p.stats.cwBest||{};
+    if(p.sound===undefined) p.sound=true;
+    p.level=p.level||"a1"; p.size=p.size||"m";
+    p.notes=p.notes||{}; p.goal=p.goal||20;
+    if(p.session===undefined) p.session=null;
+  }
+  if(!a.profiles[a.active]) a.active=Object.keys(a.profiles)[0];
+  /* Однакові імена плутають. Розводимо їх і на завантаженні,
+     бо дублі могли лишитись від старих версій чи прийти з імпорту. */
+  const used=[];
+  for(const id in a.profiles){
+    const p=a.profiles[id];
+    let nm=(p.name||"Учень").trim()||"Учень";
+    if(used.includes(nm.toLowerCase())){
+      let n=2;
+      while(used.includes((nm+" "+n).toLowerCase())) n++;
+      nm=nm+" "+n; p.name=nm;
+    }
+    used.push(nm.toLowerCase());
+  }
+  return a;
+}
+let ALL = loadAll();
+let S = ALL.profiles[ALL.active];
+function save(){ try{ localStorage.setItem(ROOT, JSON.stringify(ALL)); }catch(e){ toast("Не вдалося зберегти"); } }
+/* ---------- автозбереження незавершеного етапу ----------
+   Відповіді зберігались і раніше (кожна окремо), але сам етап — ні:
+   вийшов посеред раунду чи кросворда — набране пропадало. */
+function saveSession(kind, data){
+  if(!S) return;
+  S.session = data ? Object.assign({kind, ts:Date.now()}, data) : null;
+  save();
+}
+function clearSession(){ if(S && S.session){ S.session=null; save(); } }
+
+function saveCardsSession(){
+  if(!curLevel || !deck.length) return;
+  saveSession("cards", {
+    level:curLevel.id, mode:mode2, qi:qi, score:score,
+    deck:deck.map(w=>w[0]),
+    introQueue:introQueue.map(w=>w[0]), introI:introI,
+    inIntro:$("#s-intro").classList.contains("on")
+  });
+}
+function saveCwSession(){
+  if(!curLevel || !placed.length || cwFinished) return;
+  saveSession("cw", {
+    level:curLevel.id, size:S.size,
+    words:placed.map(p=>({en:p.en,r:p.r,c:p.c,dir:p.dir})),
+    rows:grid.length, cols:grid[0].length,
+    user:cwUser, hints:cwHints, elapsed:Date.now()-cwStart
+  });
+}
+function sessionInfo(){
+  const z=S && S.session;
+  if(!z) return null;
+  const lv=getLevel(z.level);
+  if(z.kind==="cards"){
+    const left=Math.max(0,(z.deck||[]).length-(z.qi||0));
+    return {kind:"cards", lv, text:"Незавершений раунд: "+lv.code+", лишилось "+left+" слів"};
+  }
+  if(z.kind==="cw"){
+    const filled=(z.user||[]).reduce((a,row)=>a+row.filter(x=>x).length,0);
+    return {kind:"cw", lv, text:"Незавершений кросворд: "+lv.code+", вписано літер "+filled};
+  }
+  return null;
+}
+function resumeSession(){
+  const z=S && S.session;
+  if(!z){ toast("Немає що відновлювати"); return; }
+  const lv=getLevel(z.level); curLevel=lv;
+  if(z.kind==="cards"){
+    const byEn=en=>lv.words.find(w=>w[0]===en);
+    deck=(z.deck||[]).map(byEn).filter(Boolean);
+    introQueue=(z.introQueue||[]).map(byEn).filter(Boolean);
+    if(!deck.length){ clearSession(); toast("Сеанс застарів"); return; }
+    mode2=z.mode||"mix"; qi=Math.min(z.qi||0,deck.length); score=z.score||0; introI=z.introI||0;
+    if(z.inIntro && introI<introQueue.length) showIntro();
+    else { openOverlay("s-cards"); nextCard(); }
+    return;
+  }
+  if(z.kind==="cw"){
+    grid=Array.from({length:z.rows},()=>Array(z.cols).fill(null));
+    placed=(z.words||[]).map(p=>{
+      const src=lv.words.find(x=>x[0]===p.en);
+      return {en:p.en, ua:src?src[1]:"", em:src?src[2]:"❓", r:p.r, c:p.c, dir:p.dir, len:p.en.length};
+    });
+    if(!placed.length){ clearSession(); toast("Сеанс застарів"); return; }
+    placed.forEach(p=>{ for(let i=0;i<p.len;i++){ const [r,c]=cellOf(p,i); grid[r][c]=p.en[i]; } });
+    cwUser=z.user||grid.map(row=>row.map(ch=>ch?"":null));
+    cwNums={};
+    placed.slice().sort((a,b)=>a.r-b.r||a.c-b.c).forEach(p=>{
+      const k=p.r+","+p.c;
+      if(!(k in cwNums)) cwNums[k]=Object.keys(cwNums).length+1;
+      p.no=cwNums[k];
+    });
+    cwHints=z.hints||0; cwFinished=false;
+    cwStart=Date.now()-(z.elapsed||0);
+    clearInterval(cwTimer);
+    cwTimer=setInterval(()=>{ if(!cwFinished) $("#w-time").textContent=mmss(Date.now()-cwStart); },1000);
+    $("#w-hints").textContent=cwHints;
+    sel=null; selWord=null;
+    selectWord(placed.find(p=>!wordDone(p))||placed[0]);
+    drawCw(); drawKeyboard(); drawClueList(); updateCw();
+    openOverlay("s-cw"); setTimeout(focusCap,60);
+  }
+}
+
+function switchProfile(id){
+  if(!ALL.profiles[id]) return;
+  ALL.active=id; S=ALL.profiles[id]; save(); showTab("s-learn");
+  toast("Профіль: "+S.name);
+}
+
+/* Телефон може вивантажити вкладку будь-якої миті — зберігаємось при згортанні */
+function autosaveNow(){
+  if($("#s-cw").classList.contains("on")) saveCwSession();
+  else if($("#s-cards").classList.contains("on")||$("#s-intro").classList.contains("on")) saveCardsSession();
+  else save();
+}
+document.addEventListener("visibilitychange",()=>{ if(document.hidden) autosaveNow(); });
+window.addEventListener("pagehide", autosaveNow);
+window.addEventListener("beforeunload", autosaveNow);
+window.addEventListener("resize",()=>{ if($("#s-cw").classList.contains("on")) positionCap(); });
+
+/* ==================== слова й повторення ==================== */
+const wkey=(lv,en)=>lv+":"+en;
+/* Тип вправи росте разом із засвоєнням слова — «бажана складність»:
+   впізнати переклад  ->  згадати англійське серед варіантів  ->  написати самому. */
+function sentOf(en){ return SENT[en]||""; }
+function escAttr(s){ return (s||"").replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;"); }
+/* Індекс "англійське слово -> переклад" з усього словника (для перекладу слів у прикладах речень) */
+let WORD_TR=null;
+function buildWordIndex(){
+  WORD_TR={};
+  LEVELS.forEach(lv=>lv.words.forEach(w=>{ WORD_TR[w[0].toLowerCase()]=w[1]; }));
+}
+/* Невеликий словник службових/загальних слів — покриває займенники, прийменники,
+   сполучники, допоміжні дієслова та найчастіші слова з прикладів речень.
+   Це "best effort": рідкісні змістові слова (дієслова, іменники поза основним
+   словником) можуть лишитися без перекладу — просто не будуть підкреслені. */
+const MINI_DICT={
+  "i":"я","you":"ти/ви","he":"він","she":"вона","it":"воно/це","we":"ми","they":"вони",
+  "me":"мене/мені","him":"його/йому","her":"її/їй","us":"нас/нам","them":"їх/їм",
+  "my":"мій/моя","your":"твій/ваш","his":"його","its":"його/її","our":"наш","their":"їхній",
+  "mine":"моє","yours":"твоє","this":"це/цей","that":"той/те","these":"ці","those":"ті",
+  "am":"є","is":"є","are":"є","was":"був/була","were":"були","be":"бути","been":"був(-ла)",
+  "have":"мати","has":"має","had":"мав/мала","do":"робити","does":"робить","did":"робив(-ла)",
+  "will":"буде","would":"би/би зробив","can":"може","could":"міг би","should":"повинен",
+  "must":"мусить","may":"може","might":"можливо",
+  "not":"не","no":"немає/ні","never":"ніколи","always":"завжди","often":"часто",
+  "sometimes":"інколи","usually":"зазвичай","still":"все ще","already":"вже","again":"знову",
+  "yet":"ще","soon":"скоро","now":"зараз","today":"сьогодні","tomorrow":"завтра","yesterday":"вчора",
+  "here":"тут","there":"там","everywhere":"скрізь","somewhere":"десь","nowhere":"ніде",
+  "and":"і/та","but":"але","or":"або","so":"тому","because":"тому що","although":"хоча",
+  "if":"якщо","unless":"якщо не","while":"поки","when":"коли","where":"де","why":"чому",
+  "how":"як","what":"що","who":"хто","whose":"чий","which":"який",
+  "in":"в/у","on":"на","at":"біля/о","to":"до","from":"з/від","with":"з","without":"без",
+  "for":"для/за","of":"з","by":"біля/за допомогою","about":"про","under":"під","over":"над",
+  "between":"між","among":"серед","through":"через","during":"протягом","before":"до/перед",
+  "after":"після","since":"з (часу)","until":"доки","near":"біля","into":"в/у","out":"назовні",
+  "up":"вгору","down":"вниз","off":"геть","away":"геть","back":"назад",
+  "all":"всі/весь","some":"деякі","any":"будь-який","every":"кожен","each":"кожен","both":"обидва",
+  "either":"один із двох","neither":"жоден із двох","none":"жоден","other":"інший","another":"ще один",
+  "such":"такий","same":"той самий","many":"багато","much":"багато","few":"мало","little":"мало",
+  "more":"більше","most":"найбільше","less":"менше","least":"найменше","several":"кілька","various":"різні",
+  "one":"один","two":"два","three":"три","first":"перший","second":"другий","third":"третій","last":"останній",
+  "next":"наступний","new":"новий","old":"старий","good":"хороший","bad":"поганий","very":"дуже",
+  "too":"занадто/теж","just":"саме/щойно","only":"тільки","also":"також","please":"будь ласка",
+  "quite":"досить","really":"справді","favourite":"улюблений","favorite":"улюблений",
+  "sure":"впевнений","certain":"певний","possible":"можливий","important":"важливий","necessary":"потрібний",
+  "easy":"легкий","difficult":"складний","cheap":"дешевий","expensive":"дорогий","free":"вільний/безкоштовний",
+  "busy":"зайнятий","empty":"порожній","full":"повний","open":"відкритий","closed":"закритий","ready":"готовий",
+  "tired":"втомлений","happy":"щасливий","sad":"сумний","early":"рано","late":"пізно",
+  "fast":"швидко","slow":"повільно","hot":"гарячий","cold":"холодний","warm":"теплий",
+  "big":"великий","small":"малий","long":"довгий","short":"короткий","high":"високий","low":"низький",
+  "get":"отримати","gets":"отримує","got":"отримав","take":"взяти","takes":"бере","took":"взяв",
+  "make":"робити","makes":"робить","made":"зробив","give":"давати","gives":"дає","gave":"дав",
+  "go":"йти","goes":"йде","went":"пішов","come":"приходити","comes":"приходить","came":"прийшов",
+  "want":"хотіти","wants":"хоче","wanted":"хотів","need":"потребувати","needs":"потребує","needed":"потребував",
+  "know":"знати","knows":"знає","knew":"знав","think":"думати","thinks":"думає","thought":"думав",
+  "see":"бачити","sees":"бачить","saw":"бачив","look":"дивитися","looks":"дивиться","looked":"дивився",
+  "say":"казати","says":"каже","said":"сказав","tell":"розповідати","tells":"розповідає","told":"розповів"
+};
+/* Базові форми поширених дієслів/прикметників, яких немає в основному словнику рівнів.
+   Разом зі стеммером (baseForms) це дозволяє впізнавати форми типу "floods"->"flood",
+   "arrived"->"arrive", "closing"->"close" тощо. */
+const VERB_DICT={
+  "eat":"їсти","buy":"купувати","pour":"наливати","cook":"готувати","add":"додавати",
+  "open":"відкривати","peel":"чистити (шкірку)","cut":"різати","hide":"ховати","bark":"гавкати",
+  "sleep":"спати","sit":"сидіти","catch":"ловити","run":"бігти","lie":"лежати","count":"рахувати",
+  "land":"сідати/приземлятися","live":"жити","howl":"вити","cross":"переходити","jump":"стрибати",
+  "move":"рухатися","swim":"плавати","stand":"стояти","close":"закривати","lose":"втрачати",
+  "smile":"посміхатися","clean":"чистити","sweep":"підмітати","borrow":"позичати","draw":"малювати",
+  "write":"писати","find":"знаходити","wear":"носити (одяг)","break":"ламати(ся)","leave":"залишати/від'їжджати",
+  "arrive":"прибувати","ride":"їхати верхи/на","carry":"нести/везти","block":"блокувати","rise":"підійматися",
+  "appear":"з'являтися","stop":"зупиняти(ся)","cover":"покривати","blow":"дути","fall":"падати",
+  "throw":"кидати","hurt":"боліти","speak":"говорити","swell":"опухати","beat":"битися (про серце)",
+  "feed":"годувати","grow":"рости/вирощувати","flood":"затоплювати/повінь","walk":"ходити/гуляти",
+  "reach":"досягати","bear":"народжувати(ся)","build":"будувати","meet":"зустрічати(ся)",
+  "return":"повертати(ся)","prepare":"готувати (страви)","sell":"продавати","paint":"малювати (фарбою)",
+  "finish":"закінчувати","change":"змінювати","announce":"оголошувати","spend":"витрачати",
+  "show":"показувати","restart":"перезапускати(ся)","light":"запалювати","bring":"приносити",
+  "stir":"помішувати","tie":"зав'язувати","thread":"вдягати нитку (в голку)","delay":"затримувати",
+  "dry":"сухий/сушити","turn":"повертати(ся)/ставати","call":"телефонувати/кликати","last":"тривати",
+  "due":"належний/має відбутися","hang":"вішати","leak":"протікати","wake":"будити",
+  "postpone":"відкладати","check":"перевіряти","ignore":"ігнорувати","sign":"підписувати",
+  "raise":"підвищувати/піднімати","rent":"орендувати","ask":"просити/питати","approve":"схвалювати",
+  "require":"вимагати(ся)","tighten":"затягувати","send":"надсилати","test":"тестувати",
+  "launch":"запускати","measure":"вимірювати","reduce":"зменшувати","increase":"збільшувати",
+  "exceed":"перевищувати","try":"намагатися/пробувати","order":"замовляти","double":"подвоювати(ся)",
+  "apply":"застосовуватися","refuse":"відмовляти(ся)","report":"повідомляти/звітувати",
+  "hope":"сподіватися","fear":"боятися","threaded":"вдягнув(-ла) нитку","born":"народжений",
+  "narrow":"вузький","empty":"порожній","dangerous":"небезпечний","calm":"спокійний","serious":"серйозний",
+  "unusual":"незвичайний","patient":"терплячий","sharp":"гострий","strange":"дивний","fresh":"свіжий",
+  "bright":"яскравий","heavy":"важкий","gold":"золотий","silver":"срібний","wooden":"дерев'яний",
+  "thin":"тонкий","thick":"товстий","weak":"слабкий","strong":"сильний"
+};
+function baseForms(w){
+  const f=[];
+  if(/ies$/.test(w)) f.push(w.slice(0,-3)+"y");
+  if(/(ses|xes|ches|shes|zes)$/.test(w)) f.push(w.slice(0,-2));
+  if(/s$/.test(w)&&w.length>3) f.push(w.slice(0,-1));
+  if(/ed$/.test(w)){
+    f.push(w.slice(0,-2)); f.push(w.slice(0,-1));
+    if(/(.)\1ed$/.test(w)) f.push(w.slice(0,-3));
+  }
+  if(/ing$/.test(w)){
+    f.push(w.slice(0,-3)); f.push(w.slice(0,-3)+"e");
+    if(/(.)\1ing$/.test(w)) f.push(w.slice(0,-4));
+  }
+  return f;
+}
+function lookupWordTranslation(word){
+  if(!WORD_TR) buildWordIndex();
+  const w=(word||"").toLowerCase();
+  if(MINI_DICT[w]) return MINI_DICT[w];
+  if(WORD_TR[w]) return WORD_TR[w];
+  if(VERB_DICT[w]) return VERB_DICT[w];
+  for(const f of baseForms(w)){
+    if(MINI_DICT[f]) return MINI_DICT[f];
+    if(WORD_TR[f]) return WORD_TR[f];
+    if(VERB_DICT[f]) return VERB_DICT[f];
+  }
+  return null;
+}
+function wrapWords(text){
+  return text.replace(/[A-Za-z']+/g, m=>{
+    const tr=lookupWordTranslation(m);
+    return tr ? '<span class="sword" data-tr="'+escAttr(tr)+'" title="'+escAttr(tr)+'">'+m+'</span>' : m;
+  });
+}
+function sentHtml(en, reveal){
+  const s=sentOf(en); if(!s) return "";
+  const idx=s.indexOf("{}");
+  if(idx<0) return wrapWords(s);
+  const before=wrapWords(s.slice(0,idx)), after=wrapWords(s.slice(idx+2));
+  return before + (reveal ? "<u>"+en+"</u>" : '<span class="gap"></span>') + after;
+}
+function exerciseFor(box){
+  if(box<=1) return "pick";     // EN -> UA, вибір із чотирьох
+  if(box<=3) return "recall";   // UA -> EN, вибір із чотирьох
+  return "type";                // UA -> EN, набрати вручну
+}
+const wstate=(lv,en)=> S.words[wkey(lv,en)] || {b:0,due:0,seen:0,ok:0,err:0,status:null};
+/* Ручна позначка користувача поверх автоматичного інтервального повторення:
+   "repeat" — слово важко дається, показувати частіше;
+   "mastered" — слово дуже добре знаю, прибрати з наступних уроків.
+   Повторний тап на ту саму позначку знімає її (повертає режим "на розсуд алгоритму"). */
+function setStatus(lv,en,status){
+  const k=wkey(lv,en), w=S.words[k]||{b:0,due:0,seen:0,ok:0,err:0};
+  w.status = (w.status===status) ? null : status;
+  S.words[k]=w; save();
+  return w.status;
+}
+/* Самооцінка "наскільки добре вже знаю це слово" за шкалою 1-10 (екран знайомства).
+   1-2 -> одразу позначаємо "повторювати", 9-10 -> "знаю добре", решта — звичайна прогресія коробки. */
+function rateWord(lv,en,rating){
+  const k=wkey(lv,en), w=S.words[k]||{b:0,due:0,seen:0,ok:0,err:0};
+  if(w.rated===rating){ // повторний тап на ту саму оцінку — скасовуємо
+    w.rated=null; w.status=null; w.b=0; w.due=0;
+    if(!w.ok && !w.err) w.seen=0;   // відповідей ще не було — слово знову "нове"
+    S.words[k]=w; save();
+    return null;
+  }
+  /* Самооцінка — це заявка, а не перевірена відповідь, тому коробку піднімаємо
+     обережно: максимум до 4-ї (8 днів), а не до 6-ї (32 дні). Реальні відповіді
+     у вправах підніматимуть її далі. */
+  const box=Math.min(4, Math.round((rating-1)/9*4));
+  w.rated=rating; w.b=box; w.due=Date.now()+STEPS[box]*DAY;
+  /* Слово оцінене — воно вже не "нове": інакше воно назавжди лишалось би
+     в колонці «нові», не потрапляло в повторення й знову йшло на знайомство. */
+  w.seen=Math.max(w.seen||0,1);
+  w.status = rating<=2 ? "repeat" : rating>=9 ? "mastered" : null;
+  S.words[k]=w; save();
+  return rating;
+}
+function today(){ const d=new Date();
+  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+function markAnswer(lv,en,right){
+  const k=wkey(lv,en), w=S.words[k]||{b:0,due:0,seen:0,ok:0,err:0};
+  w.seen++;
+  if(right){ w.b=Math.min(w.b+1,STEPS.length-1); w.ok=(w.ok||0)+1; }
+  else { w.b=Math.max(0,w.b-2); w.err=(w.err||0)+1; }
+  w.due=Date.now()+STEPS[w.b]*DAY; w.last=Date.now();
+  S.words[k]=w; S.stats.answers++; if(right)S.stats.right++;
+  const t=today(); S.days[t]=(S.days[t]||0)+1;
+  save();
+}
+function streak(){
+  let n=0,d=new Date();
+  const fmt=x=>x.getFullYear()+"-"+String(x.getMonth()+1).padStart(2,"0")+"-"+String(x.getDate()).padStart(2,"0");
+  if(!S.days[fmt(d)]) d.setDate(d.getDate()-1);
+  while(S.days[fmt(d)]){ n++; d.setDate(d.getDate()-1); }
+  return n;
+}
+function lvStats(lv){
+  let fresh=0,learning=0,known=0,due=0,hard=0; const now=Date.now();
+  for(const w of lv.words){
+    const st=wstate(lv.id,w[0]);
+    if(st.seen===0) fresh++; else if(st.b>=4) known++; else learning++;
+    if(st.seen>0&&st.due<=now) due++;
+    if((st.err||0)>0&&st.b<4) hard++;
+  }
+  const total=lv.words.length;
+  return {fresh,learning,known,due,hard,total,pct:Math.round(known/total*100)};
+}
+const getLevel=id=>LEVELS.find(l=>l.id===id)||LEVELS[0];
+
+/* ==================== дрібниці ==================== */
+const $=s=>document.querySelector(s), $$=s=>Array.from(document.querySelectorAll(s));
+let tab="s-learn", overlay=null;
+function showTab(id){
+  overlay=null; tab=id;
+  $$(".screen").forEach(s=>s.classList.remove("on"));
+  $("#"+id).classList.add("on");
+  $$("nav button").forEach(b=>b.classList.toggle("on",b.dataset.tab===id));
+  document.querySelector("nav").style.display="flex";
+  ({"s-learn":renderLearn,"s-cwhome":renderCwHome,"s-stats":renderStats,"s-more":renderProfiles}[id]||function(){})();
+  window.scrollTo(0,0);
+}
+function openOverlay(id){
+  overlay=id;
+  $$(".screen").forEach(s=>s.classList.remove("on"));
+  $("#"+id).classList.add("on");
+  document.querySelector("nav").style.display=(id==="s-list")?"flex":"none";
+  window.scrollTo(0,0);
+}
+const closeOverlay=()=>showTab(tab);
+let toastT;
+function toast(m){ const e=$("#toast"); e.textContent=m; e.classList.add("on");
+  clearTimeout(toastT); toastT=setTimeout(()=>e.classList.remove("on"),1800); }
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=(Math.random()*(i+1))|0;[a[i],a[j]]=[a[j],a[i]];}return a;}
+function say(t){ if(!S.sound)return; try{ if(!window.speechSynthesis)return;
+  speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(t); u.lang="en-US"; u.rate=.9; speechSynthesis.speak(u);}catch(e){} }
+function vibrate(p){ try{ navigator.vibrate&&navigator.vibrate(p); }catch(e){} }
+function mmss(ms){ const s=Math.floor(ms/1000); return Math.floor(s/60)+":"+String(s%60).padStart(2,"0"); }
+
+function drawChips(box,cb){
+  box.innerHTML="";
+  LEVELS.forEach(lv=>{
+    const b=document.createElement("button");
+    b.className="chip"+(lv.id===S.level?" on":"");
+    b.style.setProperty("--c",lv.color);
+    b.textContent=lv.code+" · "+lv.name;
+    b.onclick=()=>{ S.level=lv.id; save(); cb(); };
+    box.appendChild(b);
+  });
+}
+
+/* ==================== екран «Вчити» ==================== */
+function goalToday(){ return S.days[today()]||0; }
+function renderGoal(){
+  const g=S.goal||20, n=goalToday(), pct=Math.min(1,n/g);
+  $("#ring-fg").setAttribute("stroke-dashoffset", (100.5*(1-pct)).toFixed(1));
+  $("#ring-tx").textContent=n;
+  $("#goal-t").textContent = n>=g ? "Ціль виконана" : "Ціль на сьогодні";
+  $("#goal-d").textContent = n>=g
+    ? ("Відповідей сьогодні: "+n+". Можна більше — гірше не буде.")
+    : ("Ще "+(g-n)+" відповідей до денної цілі");
+}
+function renderLearn(){
+  renderGoal();
+  $("#ava-learn").textContent=S.ava;
+  $("#hi").textContent=S.name;
+  drawChips($("#chips-learn"),renderLearn);
+  const lv=getLevel(S.level), s=lvStats(lv);
+  $("#lv-card").style.setProperty("--c",lv.color);
+  $("#lv-name").textContent=lv.code+" · "+lv.name;
+  $("#lv-st").textContent=lv.desc+" · "+s.total+" слів";
+  $("#m-known").style.cssText="width:"+(s.known/s.total*100)+"%;background:var(--sky)";
+  $("#m-learn").style.cssText="width:"+(s.learning/s.total*100)+"%;background:var(--yellow)";
+  $("#n-known").textContent=s.known; $("#n-learn").textContent=s.learning; $("#n-new").textContent=s.fresh;
+  $("#due-txt").textContent=s.due?("Слів на сьогодні: "+s.due):"На сьогодні все повторено";
+  $("#hard-txt").textContent=s.hard?("Слів із помилками: "+s.hard):"Помилок поки немає";
+  $("#learn-sub").textContent="Вивчено "+s.known+" з "+s.total+" на рівні "+lv.code;
+  const si=sessionInfo();
+  $("#go-resume").style.display = si ? "flex" : "none";
+  if(si) $("#resume-txt").textContent=si.text;
+}
+
+/* ==================== кросворд: головна ==================== */
+const SIZES={s:{n:10,w:8,t:"Малий"},m:{n:13,w:12,t:"Середній"},l:{n:16,w:18,t:"Великий"}};
+function renderCwHome(){
+  drawChips($("#chips-cw"),renderCwHome);
+  const lv=getLevel(S.level);
+  $("#cw-card").style.setProperty("--c",lv.color);
+  $("#cw-name").textContent=lv.code+" · "+lv.name;
+  const best=S.stats.cwBest[lv.id+"_"+S.size];
+  $("#cw-st").textContent="Зібрано кросвордів: "+S.stats.cw+(best?("  ·  найкращий час: "+mmss(best)):"");
+  const box=$("#chips-size"); box.innerHTML="";
+  Object.keys(SIZES).forEach(k=>{
+    const b=document.createElement("button");
+    b.className="chip"+(k===S.size?" on":"");
+    b.style.setProperty("--c","var(--yellow)");
+    b.textContent=SIZES[k].t+" · до "+SIZES[k].w+" слів";
+    b.onclick=()=>{ S.size=k; save(); renderCwHome(); };
+    box.appendChild(b);
+  });
+}
+
+/* ==================== статистика ==================== */
+let wordFilter="err";
+function renderStats(){
+  const known=Object.values(S.words).filter(w=>w.b>=4).length;
+  const acc=S.stats.answers?Math.round(S.stats.right/S.stats.answers*100):0;
+  $("#k-known").textContent=known;
+  $("#k-streak").textContent=streak();
+  $("#k-acc").textContent=acc+"%";
+  $("#k-ans").textContent=S.stats.answers;
+  const total=LEVELS.reduce((a,l)=>a+l.words.length,0);
+  $("#st-sub").textContent=S.name+" · словник "+total+" слів · кросвордів "+S.stats.cw;
+
+  const days=[],d=new Date();
+  for(let i=13;i>=0;i--){ const x=new Date(d); x.setDate(d.getDate()-i);
+    const t=x.getFullYear()+"-"+String(x.getMonth()+1).padStart(2,"0")+"-"+String(x.getDate()).padStart(2,"0");
+    days.push({n:S.days[t]||0,lbl:x.getDate()+"."+(x.getMonth()+1)}); }
+  const max=Math.max(10,...days.map(x=>x.n));
+  $("#bars").innerHTML=days.map(x=>'<div class="b'+(x.n?" has":"")+'" style="height:'+Math.max(3,x.n/max*80)+'px"></div>').join("");
+  $("#ax-from").textContent=days[0].lbl;
+
+  $("#st-levels").innerHTML=LEVELS.map(lv=>{
+    const s=lvStats(lv);
+    let right=0,wrong=0;
+    for(const w of lv.words){ const st=wstate(lv.id,w[0]); right+=st.ok||0; wrong+=st.err||0; }
+    return '<div class="stat" style="--c:'+lv.color+'"><div class="code">'+lv.code+'</div>'
+      +'<div style="flex:1"><div class="nm">'+lv.name+'</div>'
+      +'<div class="meter" style="margin-top:6px">'
+      +'<i style="width:'+(s.known/s.total*100)+'%;background:var(--sky)"></i>'
+      +'<i style="width:'+(s.learning/s.total*100)+'%;background:var(--yellow)"></i></div>'
+      +'<div class="st" style="margin-top:5px;font-size:12.5px">'
+      +'<span style="color:var(--sky)">✓ '+right+'</span> · '
+      +'<span style="color:var(--coral)">✗ '+wrong+'</span></div></div>'
+      +'<div class="num">'+s.known+" / "+s.total+'</div></div>';
+  }).join("");
+
+  const fbox=$("#chips-filter"); fbox.innerHTML="";
+  [["err","З помилками"],["learn","Вчу"],["known","Знаю"],["new","Нові"]].forEach(([k,t])=>{
+    const b=document.createElement("button");
+    b.className="chip"+(k===wordFilter?" on":"");
+    b.style.setProperty("--c","var(--yellow)");
+    b.textContent=t;
+    b.onclick=()=>{ wordFilter=k; renderStats(); };
+    fbox.appendChild(b);
+  });
+
+  const rows=[];
+  for(const lv of LEVELS) for(const w of lv.words){
+    const st=wstate(lv.id,w[0]);
+    const pass = wordFilter==="err" ? (st.err||0)>0
+              : wordFilter==="learn" ? (st.seen>0&&st.b<4)
+              : wordFilter==="known" ? st.b>=4 : st.seen===0;
+    if(pass) rows.push({lv,w,st});
+  }
+  rows.sort((a,b)=> (b.st.err||0)-(a.st.err||0) || (b.st.seen||0)-(a.st.seen||0));
+  $("#st-words").innerHTML = rows.length
+    ? rows.slice(0,60).map(r=>wordRow(r.lv,r.w,r.st)).join("")
+      + (rows.length>60?'<div class="sub" style="color:var(--dim);padding:10px 0">і ще '+(rows.length-60)+"…</div>":"")
+    : '<div class="sub" style="color:var(--dim);padding:10px 0">Порожньо</div>';
+  bindWordRows("#st-words");
+}
+function wordRow(lv,w,st){
+  const box = st.seen===0 ? "" : (st.b>=4?"знаю":"коробка "+st.b);
+  const note=S.notes[wkey(lv.id,w[0])];
+  const isRep=st.status==="repeat", isMas=st.status==="mastered";
+  return '<div class="wordrow" data-w="'+w[0]+'" data-lv="'+lv.id+'" data-ua="'+w[1]+'">'
+    +'<div class="em">'+w[2]+'</div>'
+    +'<div style="min-width:0"><div class="en">'+w[0]
+    +' <span style="color:var(--dim);font-weight:400;font-size:12px">'+lv.code+'</span>'
+    +(note?' <span style="color:var(--lilac)">🔗</span>':"")+'</div>'
+    +'<div class="ua">'+w[1]+(note?' · <span style="color:var(--lilac)">'+note+'</span>':"")+'</div></div>'
+    +'<div class="sc"><span class="g">✓ '+(st.ok||0)+'</span> <span class="r">✗ '+(st.err||0)+'</span>'
+    +'<span class="bx">'+box+'</span></div>'
+    +'<span class="stbtn" data-act="repeat" data-w="'+w[0]+'" data-lv="'+lv.id+'" '
+    +'style="cursor:pointer;padding:2px 4px;'+(isRep?'':'opacity:.3')+'" title="повторювати">🔁</span>'
+    +'<span class="stbtn" data-act="mastered" data-w="'+w[0]+'" data-lv="'+lv.id+'" '
+    +'style="cursor:pointer;padding:2px 4px;'+(isMas?'':'opacity:.3')+'" title="знаю добре">✅</span>'
+    +'</div>';
+}
+function bindWordRows(sel){
+  $$(sel+" .wordrow").forEach(r=>{
+    let t=null;
+    r.onclick=()=>say(r.dataset.w);
+    r.oncontextmenu=e=>{ e.preventDefault(); openNote(r.dataset.lv,r.dataset.w,r.dataset.ua); };
+    r.addEventListener("touchstart",()=>{ t=setTimeout(()=>openNote(r.dataset.lv,r.dataset.w,r.dataset.ua),550); },{passive:true});
+    ["touchend","touchmove","touchcancel"].forEach(ev=>r.addEventListener(ev,()=>clearTimeout(t),{passive:true}));
+    r.querySelectorAll(".stbtn").forEach(b=>{
+      b.onclick=e=>{
+        e.stopPropagation();
+        const act=b.dataset.act, en=b.dataset.w, lv=b.dataset.lv;
+        const st=setStatus(lv,en,act);
+        toast(st===act ? (act==="repeat"?"Позначено: повторювати":"Позначено: знаю добре") : "Позначку знято");
+        if($("#s-list").classList.contains("on")) renderList();
+        if($("#s-stats").classList.contains("on")) renderStats();
+      };
+    });
+  });
+}
+
+/* ==================== профілі ==================== */
+/* Коли профіль востаннє займався — щоб не плутати схожі */
+function lastSeenText(p){
+  const days=Object.keys(p.days||{}).sort();
+  if(!days.length) return "занять ще не було";
+  const last=days[days.length-1];
+  const [y,m,dd]=last.split("-").map(Number);
+  const diff=Math.round((new Date(new Date().toDateString())-new Date(y,m-1,dd))/86400000);
+  const when = diff<=0?"сьогодні" : diff===1?"вчора" : diff<7?(diff+" дні тому") : (dd+"."+String(m).padStart(2,"0"));
+  return "останнє заняття: "+when+" · днів занять: "+days.length;
+}
+
+function renderProfiles(){
+  const box=$("#pf-list"); box.innerHTML="";
+  const ids=Object.keys(ALL.profiles);
+  $("#pf-sub").textContent = ids.length>1 ? ("Профілів: "+ids.length) : "Можна створити окремий профіль для кожного";
+  ids.forEach(id=>{
+    const p=ALL.profiles[id];
+    const known=Object.values(p.words).filter(w=>w.b>=4).length;
+    const active=id===ALL.active;
+    const d=document.createElement("div");
+    d.className="prow"+(active?" on":"");
+    d.innerHTML=
+       '<div class="ava" style="--c:'+(active?"var(--yellow)":"rgba(244,241,230,.3)")+'">'+p.ava+'</div>'
+      +'<div style="flex:1;min-width:0">'
+      +'<div class="nm">'+escAttr(p.name)+(active?' <span class="badge-act">активний</span>':"")+'</div>'
+      +'<div class="d">вивчено '+known+" слів · відповідей "+(p.stats.answers||0)
+      +(p.session?' · <span style="color:var(--yellow)">є незавершений етап</span>':"")+'</div>'
+      +'<div class="d">'+lastSeenText(p)+'</div></div>'
+      +'<button class="pfbtn" data-act="edit" title="Змінити імʼя та аватар">✎</button>'
+      +(ids.length>1?'<button class="pfbtn" data-act="del" title="Видалити профіль">🗑</button>':"");
+    d.onclick=e=>{
+      const b=e.target.closest(".pfbtn");
+      if(b && b.dataset.act==="edit"){ e.stopPropagation(); openProfileEdit(id); return; }
+      if(b && b.dataset.act==="del"){
+        e.stopPropagation();
+        if(confirm("Видалити профіль «"+p.name+"» разом із усім прогресом?\n\nДію не можна скасувати.")){
+          delete ALL.profiles[id];
+          if(ALL.active===id){ ALL.active=Object.keys(ALL.profiles)[0]; S=ALL.profiles[ALL.active]; }
+          save(); renderProfiles(); toast("Профіль видалено");
+        }
+        return;
+      }
+      if(!active){ autosaveNow(); switchProfile(id); }  // зберігаємо етап перед переходом
+    };
+    box.appendChild(d);
+  });
+  const gbox=$("#chips-goal"); gbox.innerHTML="";
+  [10,20,40,60].forEach(g=>{
+    const b=document.createElement("button");
+    b.className="chip"+(g===S.goal?" on":"");
+    b.style.setProperty("--c","var(--yellow)");
+    b.textContent=g+" відповідей";
+    b.onclick=()=>{ S.goal=g; save(); renderProfiles(); };
+    gbox.appendChild(b);
+  });
+  $("#sound-st").textContent=S.sound?"Увімкнено":"Вимкнено";
+  $("#reset-st").textContent="Стосується профілю «"+S.name+"»";
+  $("#m-total").textContent=LEVELS.reduce((a,l)=>a+l.words.length,0);
+}
+let editId=null, pickEmo="🙂";
+function openProfileEdit(id){
+  editId=id;
+  const p=id?ALL.profiles[id]:null;
+  $("#mo-title").textContent=id?"Профіль":"Новий профіль";
+  $("#mo-name").value=p?p.name:"";
+  pickEmo=p?p.ava:AVATARS[(Math.random()*AVATARS.length)|0];
+  const box=$("#mo-emo"); box.innerHTML="";
+  AVATARS.forEach(e=>{
+    const b=document.createElement("button");
+    b.textContent=e; b.className=(e===pickEmo?"on":"");
+    b.onclick=()=>{ pickEmo=e; $$("#mo-emo button").forEach(x=>x.classList.toggle("on",x.textContent===e)); };
+    box.appendChild(b);
+  });
+  $("#modal").classList.add("on");
+  setTimeout(()=>$("#mo-name").focus(),80);
+}
+$("#mo-cancel").onclick=()=>$("#modal").classList.remove("on");
+function uniqueName(nm, exceptId){
+  const taken=Object.keys(ALL.profiles).filter(i=>i!==exceptId)
+    .map(i=>ALL.profiles[i].name.toLowerCase());
+  if(!taken.includes(nm.toLowerCase())) return nm;
+  let n=2;
+  while(taken.includes((nm+" "+n).toLowerCase())) n++;
+  return nm+" "+n;
+}
+$("#mo-ok").onclick=()=>{
+  let nm=($("#mo-name").value||"").trim()||"Учень";
+  nm=uniqueName(nm, editId);
+  if(editId){ ALL.profiles[editId].name=nm; ALL.profiles[editId].ava=pickEmo; }
+  else{
+    const id="p"+Date.now();
+    ALL.profiles[id]=blank(nm,pickEmo);
+    ALL.active=id; S=ALL.profiles[id];
+  }
+  save(); $("#modal").classList.remove("on"); renderProfiles(); renderLearn();
+};
+
+/* ==================== список слів рівня ==================== */
+let listFilter="all";
+function renderList(){
+  const lv=getLevel(S.level), s=lvStats(lv);
+  $("#l-title").textContent=lv.code+" · "+lv.name;
+  $("#l-sub").textContent=s.total+" слів · тап — озвучити, довгий тап — своя зачіпка";
+  const fbox=$("#chips-lfilter"); fbox.innerHTML="";
+  [["all","Усі"],["new","Нові"],["learn","Вчу"],["known","Знаю"],["err","З помилками"]].forEach(([k,t])=>{
+    const b=document.createElement("button");
+    b.className="chip"+(k===listFilter?" on":"");
+    b.style.setProperty("--c",lv.color);
+    b.textContent=t;
+    b.onclick=()=>{ listFilter=k; renderList(); };
+    fbox.appendChild(b);
+  });
+  const rows=lv.words.filter(w=>{
+    const st=wstate(lv.id,w[0]);
+    return listFilter==="all" ? true
+      : listFilter==="new" ? st.seen===0
+      : listFilter==="learn" ? (st.seen>0&&st.b<4)
+      : listFilter==="known" ? st.b>=4 : (st.err||0)>0;
+  });
+  $("#l-body").innerHTML = rows.length
+    ? rows.map(w=>wordRow(lv,w,wstate(lv.id,w[0]))).join("")
+    : '<div class="sub" style="color:var(--dim);padding:12px 0">Порожньо</div>';
+  bindWordRows("#l-body");
+}
+
+/* ==================== своя зачіпка ==================== */
+let noteKey=null;
+function openNote(lvId,en,ua){
+  noteKey=wkey(lvId,en);
+  $("#nt-title").textContent=en+" — "+ua;
+  $("#nt-text").value=S.notes[noteKey]||"";
+  $("#modal-note").classList.add("on");
+  setTimeout(()=>$("#nt-text").focus(),80);
+}
+$("#nt-cancel").onclick=()=>$("#modal-note").classList.remove("on");
+$("#nt-ok").onclick=()=>{
+  const v=($("#nt-text").value||"").trim();
+  if(v) S.notes[noteKey]=v; else delete S.notes[noteKey];
+  save(); $("#modal-note").classList.remove("on");
+  if($("#s-intro").classList.contains("on")){
+    const w=introQueue[introI];
+    if(w) $("#i-mnem").textContent=S.notes[wkey(curLevel.id,w[0])]?("🔗 "+S.notes[wkey(curLevel.id,w[0])]):"";
+  }
+  if($("#s-list").classList.contains("on")) renderList();
+  if($("#s-stats").classList.contains("on")) renderStats();
+  toast(v?"Зачіпку збережено":"Зачіпку прибрано");
+};
+
+/* ==================== картки ==================== */
+const ROUND=10;
+let deck=[],qi=0,score=0,dir="en2ua",answered=false,curLevel=null,mode2="mix",exType="pick";
+function pickDeck(lv,kind){
+  const now=Date.now();
+  let pool=lv.words.map(w=>{
+    const st=wstate(lv.id,w[0]);
+    const overdue=st.seen>0&&st.due<=now;
+    let p=(st.seen===0?2:(overdue?3+(st.err||0):1))+Math.random();
+    if(st.status==="repeat") p+=6; // важке слово — піднімаємо в пріоритеті
+    return {w,st,overdue,p};
+  });
+  // "знаю добре" — прибираємо зі звичайних уроків (якщо через це пул не спорожніє зовсім)
+  const withoutMastered=pool.filter(x=>x.st.status!=="mastered");
+  if(withoutMastered.length) pool=withoutMastered;
+  if(kind==="due"){ const d=pool.filter(x=>x.overdue); if(d.length) pool=d; }
+  if(kind==="hard"){ const h=pool.filter(x=>((x.st.err||0)>0&&x.st.b<4)||x.st.status==="repeat"); if(h.length) pool=h; }
+  pool.sort((a,b)=>b.p-a.p);
+  return pool.slice(0,ROUND).map(x=>x.w);
+}
+let introQueue=[], introI=0;
+function startCards(lv,kind){
+  clearSession();
+  curLevel=lv; mode2=kind||"mix";
+  deck=pickDeck(lv,mode2);
+  if(!deck.length){ toast("Немає слів для цього режиму"); return; }
+  qi=0; score=0;
+  // нові слова спершу показуємо, і лише потім питаємо
+  introQueue=deck.filter(w=>wstate(lv.id,w[0]).seen===0);
+  introI=0;
+  if(introQueue.length) showIntro();
+  else { openOverlay("s-cards"); nextCard(); }
+}
+function drawIntroRate(en){
+  const box=$("#i-rate"); box.innerHTML="";
+  const rated=(S.words[wkey(curLevel.id,en)]||{}).rated||null;
+  for(let n=1;n<=10;n++){
+    const b=document.createElement("button");
+    b.textContent=n;
+    b.className = n<=2?"r-lo":n>=9?"r-hi":"";
+    if(n===rated) b.className+=" on";
+    b.onclick=()=>{
+      const r=rateWord(curLevel.id,en,n);
+      drawIntroRate(en);
+      toast(r===null?"Оцінку знято": r<=2?"Позначено: повторювати частіше" : r>=9?"Позначено: знаю добре" : "Оцінку збережено");
+    };
+    box.appendChild(b);
+  }
+}
+function showIntro(){
+  saveCardsSession();          // автозбереження: кожне слово на знайомстві
+  if(introI<0) introI=0;
+  if(introI>=introQueue.length){ openOverlay("s-cards"); nextCard(); return; }
+  const [en,ua,em]=introQueue[introI];
+  $("#i-count").textContent="знайомство "+(introI+1)+" / "+introQueue.length;
+  $("#i-line").style.width=(introI/introQueue.length*100)+"%";
+  $("#i-emoji").textContent=em;
+  $("#i-word").textContent=en;
+  $("#i-ua").textContent=ua;
+  $("#i-sent").innerHTML=sentHtml(en,true);
+  const note=S.notes[wkey(curLevel.id,en)];
+  $("#i-mnem").textContent=note?("🔗 "+note):"";
+  $("#i-next").textContent=(introI===introQueue.length-1)?"Почати":"Далі";
+  $("#i-prev").style.visibility = introI===0 ? "hidden" : "visible";
+  drawIntroRate(en);
+  openOverlay("s-intro");
+  say(en);
+}
+function nextCard(){
+  if(qi>=deck.length) return finishCards();
+  answered=false;
+  saveCardsSession();          // автозбереження: кожна нова картка
+  const [en,ua,em]=deck[qi], st=wstate(curLevel.id,en);
+  exType=exerciseFor(st.b);
+  dir = exType==="pick" ? "en2ua" : "ua2en";
+  $("#c-count").textContent=(qi+1)+" / "+deck.length;
+  $("#c-score").textContent=score;
+  $("#c-line").style.width=(qi/deck.length*100)+"%";
+  $("#c-emoji").textContent=em;
+  $("#c-prev").style.visibility = qi===0 ? "hidden" : "visible";
+
+  const note=S.notes[wkey(curLevel.id,en)];
+  $("#c-mnem").textContent = (note && exType!=="pick") ? "🔗 "+note : "";
+  // у вправах на згадування показуємо речення з пропуском — контекст підказує вживання
+  $("#c-sent").innerHTML = exType==="pick" ? "" : sentHtml(en,false);
+  updateStatusBtns(st.status);
+
+  const p=$("#c-prompt");
+  if(dir==="en2ua"){ p.textContent=en; p.classList.remove("small"); }
+  else { p.textContent=ua; p.classList.add("small"); }
+
+  if(exType==="type"){
+    $("#c-hint").textContent="Напиши англійською";
+    $("#c-opts").style.display="none";
+    $("#c-type").style.display="block";
+    const inp=$("#c-input");
+    inp.value=""; inp.className=""; inp.disabled=false;
+    $("#c-feed").textContent="";
+    $("#c-ok").textContent="Перевірити";
+    setTimeout(()=>inp.focus(),120);
+    return;
+  }
+
+  $("#c-type").style.display="none";
+  $("#c-opts").style.display="grid";
+  $("#c-hint").textContent = exType==="pick" ? "Обери переклад" : "Як це англійською?";
+  const idx=dir==="en2ua"?1:0, right=deck[qi][idx];
+  const pool=curLevel.words.filter(w=>w[idx]!==right);
+  const opts=shuffle([right,...shuffle(pool).slice(0,3).map(w=>w[idx])]);
+  const box=$("#c-opts"); box.innerHTML="";
+  opts.forEach(o=>{
+    const b=document.createElement("button");
+    b.className="opt"; b.textContent=o;
+    b.onclick=()=>answerCard(b,o===right,right);
+    box.appendChild(b);
+  });
+  if(dir==="en2ua") say(en);
+}
+
+/* Помилкове слово повертається в цій же сесії через кілька карток —
+   ефект розподілу працює і всередині заняття. */
+function requeue(i){
+  const item=deck[i];
+  const pos=Math.min(deck.length, i+3+((Math.random()*2)|0));
+  deck.splice(pos,0,item);
+}
+
+function normalize(s){ return (s||"").trim().toLowerCase().replace(/\s+/g," "); }
+function checkTyped(){
+  if(answered) return;
+  const right=deck[qi][0], val=normalize($("#c-input").value);
+  if(!val){ toast("Напиши слово або тисни «Не знаю»"); return; }
+  const ok = val===normalize(right);
+  answered=true;
+  const inp=$("#c-input"); inp.disabled=true; inp.className=ok?"ok":"no";
+  $("#c-feed").innerHTML = ok ? "Так" : ("Правильно: <b>"+right+"</b>");
+  $("#c-sent").innerHTML=sentHtml(right,true);
+  markAnswer(curLevel.id,right,ok);
+  if(ok){ score++; vibrate(18); }
+  else { vibrate([25,60,25]); requeue(qi); }
+  say(right);
+  $("#c-score").textContent=score;
+  setTimeout(()=>{ qi++; nextCard(); }, ok?1000:1900);
+}
+function answerCard(btn,ok,right){
+  if(answered)return; answered=true;
+  markAnswer(curLevel.id,deck[qi][0],ok);
+  if(ok){ score++; btn.classList.add("ok"); vibrate(18); }
+  else{ btn.classList.add("no"); vibrate([25,60,25]); requeue(qi);
+    $$("#c-opts .opt").forEach(b=>{ if(b.textContent===right) b.classList.add("ok"); });
+    say(deck[qi][0]); }
+  $$("#c-opts .opt").forEach(b=>b.disabled=true);
+  $("#c-sent").innerHTML=sentHtml(deck[qi][0],true);
+  $("#c-score").textContent=score;
+  setTimeout(()=>{ qi++; nextCard(); }, ok?700:1600);
+}
+function finishCards(){
+  clearSession();              // етап пройдено
+  const pct=Math.round(score/deck.length*100);
+  $("#d-stars").textContent = pct===100?"★★★":pct>=80?"★★☆":pct>=50?"★☆☆":"☆☆☆";
+  $("#d-big").textContent=score+"/"+deck.length;
+  $("#d-msg").textContent=pct===100?"Бездоганно":pct>=80?"Добре":pct>=50?"Непогано":"Ще потренуймо";
+  const s=lvStats(curLevel);
+  $("#d-note").textContent=s.due?("Ще чекає повторення: "+s.due):"На сьогодні все повторено";
+  $("#d-again").onclick=()=>startCards(curLevel,mode2);
+  openOverlay("s-done");
+}
+
+/* ==================== кросворд ==================== */
+let grid=null,placed=[],sel=null,selWord=null,cwUser=null,cwNums={},
+    cwStart=0,cwTimer=null,cwHints=0,cwFinished=false;
+
+function buildCrossword(words,size){
+  const g=Array.from({length:size},()=>Array(size).fill(null)), out=[];
+  const list=words.slice().sort((a,b)=>b[0].length-a[0].length);
+  function fits(w,r,c,dr,dc){
+    const n=w.length;
+    if(r<0||c<0) return -1;
+    if(r+dr*(n-1)>=size||c+dc*(n-1)>=size) return -1;
+    const br=r-dr,bc=c-dc; if(br>=0&&bc>=0&&g[br][bc]) return -1;
+    const ar=r+dr*n,ac=c+dc*n; if(ar<size&&ac<size&&g[ar][ac]) return -1;
+    let cross=0;
+    for(let i=0;i<n;i++){
+      const rr=r+dr*i,cc=c+dc*i,cur=g[rr][cc];
+      if(cur){ if(cur!==w[i]) return -1; cross++; }
+      else{
+        const a1r=rr+dc,a1c=cc+dr,a2r=rr-dc,a2c=cc-dr;
+        if(a1r>=0&&a1r<size&&a1c>=0&&a1c<size&&g[a1r][a1c]) return -1;
+        if(a2r>=0&&a2r<size&&a2c>=0&&a2c<size&&g[a2r][a2c]) return -1;
+      }
+    }
+    return cross;
+  }
+  function put(it,r,c,dr,dc){
+    const en=it[0];
+    for(let i=0;i<en.length;i++) g[r+dr*i][c+dc*i]=en[i];
+    out.push({en,ua:it[1],em:it[2],r,c,dir:dr?"d":"a",len:en.length});
+  }
+  const first=list.shift(); if(!first) return {grid:g,placed:out};
+  put(first,Math.floor(size/2),Math.max(0,Math.floor((size-first[0].length)/2)),0,1);
+  for(const it of list){
+    const en=it[0]; let best=null;
+    for(const p of out) for(let i=0;i<p.en.length;i++) for(let j=0;j<en.length;j++){
+      if(p.en[i]!==en[j]) continue;
+      const dr=p.dir==="a"?1:0, dc=p.dir==="a"?0:1;
+      const r=(p.dir==="a"?p.r:p.r+i)-dr*j, c=(p.dir==="a"?p.c+i:p.c)-dc*j;
+      const cross=fits(en,r,c,dr,dc);
+      if(cross>0){
+        const sc=cross*10-Math.abs(r-size/2)-Math.abs(c-size/2);
+        if(!best||sc>best.sc) best={r,c,dr,dc,sc};
+      }
+    }
+    if(best) put(it,best.r,best.c,best.dr,best.dc);
+  }
+  return {grid:g,placed:out};
+}
+function trimGrid(res,size){
+  let r0=size,r1=-1,c0=size,c1=-1;
+  for(let r=0;r<size;r++) for(let c=0;c<size;c++) if(res.grid[r][c]){
+    if(r<r0)r0=r; if(r>r1)r1=r; if(c<c0)c0=c; if(c>c1)c1=c; }
+  if(r1<0) return res;
+  const g=[]; for(let r=r0;r<=r1;r++) g.push(res.grid[r].slice(c0,c1+1));
+  return {grid:g,placed:res.placed.map(p=>Object.assign({},p,{r:p.r-r0,c:p.c-c0}))};
+}
+function startCrossword(lv){
+  clearSession();
+  curLevel=lv;
+  const cfg=SIZES[S.size]||SIZES.m, now=Date.now();
+  const cand=lv.words
+    .filter(w=>/^[a-z]+$/.test(w[0])&&w[0].length>=3&&w[0].length<=9)
+    .map(w=>{ const st=wstate(lv.id,w[0]);
+      return {w,p:(st.seen===0?2:(st.due<=now?3+(st.err||0):1))+Math.random()}; })
+    .sort((a,b)=>b.p-a.p).slice(0,cfg.w*2).map(x=>x.w);
+  if(cand.length<5){ toast("Замало коротких слів на цьому рівні"); return; }
+
+  let best=null;
+  for(let t=0;t<6;t++){
+    const r=trimGrid(buildCrossword(shuffle(cand).slice(0,cfg.w),cfg.n),cfg.n);
+    if(!best||r.placed.length>best.placed.length) best=r;
+    if(best.placed.length>=Math.min(cfg.w,8)) break;
+  }
+  grid=best.grid; placed=best.placed;
+  cwUser=grid.map(row=>row.map(ch=>ch?"":null));
+  cwNums={};
+  placed.slice().sort((a,b)=>a.r-b.r||a.c-b.c).forEach(p=>{
+    const k=p.r+","+p.c;
+    if(!(k in cwNums)) cwNums[k]=Object.keys(cwNums).length+1;
+    p.no=cwNums[k];
+  });
+  sel=null; selWord=null; cwHints=0; cwFinished=false;
+  cwStart=Date.now();
+  clearInterval(cwTimer);
+  cwTimer=setInterval(()=>{ if(!cwFinished) $("#w-time").textContent=mmss(Date.now()-cwStart); },1000);
+  $("#w-time").textContent="0:00"; $("#w-hints").textContent="0";
+  selectWord(placed[0]);
+  drawCw(); drawKeyboard(); drawClueList(); updateCw();
+  openOverlay("s-cw");
+  setTimeout(focusCap,60);
+}
+const wordsAt=(r,c)=>placed.filter(p=> p.dir==="a"?(p.r===r&&c>=p.c&&c<p.c+p.len):(p.c===c&&r>=p.r&&r<p.r+p.len));
+const cellOf=(p,i)=> p.dir==="a" ? [p.r,p.c+i] : [p.r+i,p.c];
+function wordDone(p){
+  for(let i=0;i<p.len;i++){ const [r,c]=cellOf(p,i); if((cwUser[r][c]||"")!==p.en[i]) return false; }
+  return true;
+}
+function wordFull(p){
+  for(let i=0;i<p.len;i++){ const [r,c]=cellOf(p,i); if(!cwUser[r][c]) return false; }
+  return true;
+}
+function selectWord(p){
+  if(!p) return;
+  selWord=p;
+  for(let i=0;i<p.len;i++){ const [r,c]=cellOf(p,i); if(!cwUser[r][c]){ sel=[r,c]; showClue(); return; } }
+  sel=cellOf(p,0); showClue();
+}
+function drawCw(){
+  const rows=grid.length,cols=grid[0].length;
+  let h='<table class="cw">';
+  for(let r=0;r<rows;r++){
+    h+="<tr>";
+    for(let c=0;c<cols;c++){
+      if(!grid[r][c]){ h+="<td></td>"; continue; }
+      const ws=wordsAt(r,c);
+      const isSel=sel&&sel[0]===r&&sel[1]===c;
+      const inSel=selWord&&ws.includes(selWord);
+      const done=ws.length>0&&ws.every(wordDone);
+      const wrong=showWrong&&cwUser[r][c]&&cwUser[r][c]!==grid[r][c];
+      const cls=["cell"];
+      if(wrong)cls.push("wrong"); else if(done)cls.push("done");
+      if(inSel&&!isSel)cls.push("inword");
+      if(isSel)cls.push("sel");
+      const n=cwNums[r+","+c];
+      h+='<td class="'+cls.join(" ")+'" data-r="'+r+'" data-c="'+c+'">'
+        +(n?'<span class="n">'+n+"</span>":"")+(cwUser[r][c]||"")+"</td>";
+    }
+    h+="</tr>";
+  }
+  $("#cw-grid").innerHTML=h+"</table>";
+  $$("#cw-grid td.cell").forEach(td=>td.onclick=()=>selectCell(+td.dataset.r,+td.dataset.c));
+  if($("#s-cw").classList.contains("on")) positionCap();
+}
+function selectCell(r,c){
+  const ws=wordsAt(r,c); if(!ws.length) return;
+  if(sel&&sel[0]===r&&sel[1]===c&&ws.length>1) selWord=ws[(ws.indexOf(selWord)+1)%ws.length];
+  else if(!selWord||!ws.includes(selWord)) selWord=ws.find(w=>!wordDone(w))||ws[0];
+  sel=[r,c]; drawCw(); showClue(); markClueList(); focusCap();
+}
+
+/* ---- ввід через системну клавіатуру телефона ----
+   Кнопки власної клавіатури були 29×42px — менше за норму дотику 44px,
+   звідси промахи по сусідніх літерах. Тепер основний спосіб — системна
+   клавіатура (великі кнопки), а ігрова лишається як запасна. */
+function positionCap(){
+  const cap=$("#cw-cap"), wrap=$("#cw-wrap");
+  if(!cap||!wrap||!sel) return;
+  const td=document.querySelector('#cw-grid td[data-r="'+sel[0]+'"][data-c="'+sel[1]+'"]');
+  if(!td) return;
+  const tr=td.getBoundingClientRect(), wr=wrap.getBoundingClientRect();
+  cap.style.left=(tr.left-wr.left+wrap.scrollLeft)+"px";
+  cap.style.top=(tr.top-wr.top+wrap.scrollTop)+"px";
+  cap.style.width=tr.width+"px"; cap.style.height=tr.height+"px";
+}
+function focusCap(){
+  positionCap();
+  const cap=$("#cw-cap"); if(!cap) return;
+  const kb=$("#cw-kb");
+  if(kb&&kb.style.display!=="none") return;   // гравець сам відкрив ігрову клавіатуру
+  cap.value="";
+  try{ cap.focus({preventScroll:true}); }catch(e){ cap.focus(); }
+}
+function capInput(){
+  const cap=$("#cw-cap");
+  const m=(cap.value||"").match(/[a-zA-Z]/g);
+  if(m&&m.length) typeLetter(m[m.length-1]);
+  cap.value="";
+}
+function capKeydown(e){
+  if(e.key==="Backspace"){ e.preventDefault(); eraseLetter(); }
+  else if(e.key.indexOf("Arrow")===0){ e.preventDefault(); moveSel(e.key); }
+}
+function moveSel(key){
+  if(!sel) return;
+  const d = key==="ArrowRight"?[0,1] : key==="ArrowLeft"?[0,-1] : key==="ArrowUp"?[-1,0] : [1,0];
+  const r=sel[0]+d[0], c=sel[1]+d[1];
+  if(r<0||c<0||r>=grid.length||c>=grid[0].length||!grid[r][c]) return;
+  selectCell(r,c);
+}
+function showClue(){
+  if(!selWord) return; const p=selWord;
+  const s=sentOf(p.en);
+  $("#cw-clue").innerHTML='<div class="em">'+p.em+'</div><div style="flex:1"><div class="tx">'+p.ua+"</div>"
+    +(s?'<div class="meta" style="color:var(--dim);margin-top:2px">'+s.replace("{}","___")+"</div>":"")
+    +'<div class="meta">№'+p.no+" · "+p.len+" літер · "+(p.dir==="a"?"по горизонталі":"по вертикалі")+"</div></div>";
+}
+function drawClueList(){
+  const mk=(arr,title)=> arr.length ? '<div class="grp">'+title+"</div>"+arr.map(p=>
+      '<div class="cluerow'+(wordDone(p)?" solved":"")+(p===selWord?" on":"")+'" data-no="'+p.no+'" data-dir="'+p.dir+'">'
+      +'<div class="no">'+p.no+'</div><div class="em">'+p.em+'</div>'
+      +'<div class="tx">'+p.ua+'</div><div class="ln">'+p.len+'</div></div>').join("") : "";
+  const a=placed.filter(p=>p.dir==="a").sort((x,y)=>x.no-y.no);
+  const d=placed.filter(p=>p.dir==="d").sort((x,y)=>x.no-y.no);
+  $("#cw-clues").innerHTML=mk(a,"По горизонталі")+mk(d,"По вертикалі");
+  $$("#cw-clues .cluerow").forEach(row=>{
+    row.onclick=()=>{
+      const p=placed.find(x=>x.no==row.dataset.no&&x.dir===row.dataset.dir);
+      selectWord(p); drawCw(); markClueList(); focusCap();
+      $("#cw-grid").scrollIntoView({block:"nearest"});
+    };
+  });
+}
+function markClueList(){
+  $$("#cw-clues .cluerow").forEach(row=>{
+    const p=placed.find(x=>x.no==row.dataset.no&&x.dir===row.dataset.dir);
+    row.classList.toggle("on",p===selWord);
+    row.classList.toggle("solved",wordDone(p));
+  });
+}
+function typeLetter(ch){
+  if(!selWord){ toast("Обери слово"); return; }
+  if(!sel) sel=cellOf(selWord,0);
+  const [r,c]=sel;
+  cwUser[r][c]=ch.toLowerCase();
+  showWrong=false;
+  const p=selWord;
+  // індекс поточної клітинки в слові
+  let idx=0;
+  for(let i=0;i<p.len;i++){ const [rr,cc]=cellOf(p,i); if(rr===r&&cc===c){ idx=i; break; } }
+  // наступна клітинка слова, навіть якщо вона вже заповнена
+  if(idx+1<p.len) sel=cellOf(p,idx+1);
+  const done=wordDone(p);
+  if(done){
+    markAnswer(curLevel.id,p.en,true); say(p.en); vibrate(20);
+    const nx=placed.find(w=>!wordDone(w));
+    if(nx) selectWord(nx);
+  } else if(wordFull(p)){
+    vibrate([20,50,20]); toast("Слово зібране, але не те");
+  }
+  drawCw(); showClue(); markClueList(); updateCw();
+  saveCwSession();             // автозбереження: кожна літера
+}
+function eraseLetter(){
+  if(!sel||!selWord) return;
+  const p=selWord, [r,c]=sel;
+  let idx=0;
+  for(let i=0;i<p.len;i++){ const [rr,cc]=cellOf(p,i); if(rr===r&&cc===c){ idx=i; break; } }
+  if(cwUser[r][c]) cwUser[r][c]="";
+  else if(idx>0){ const [pr,pc]=cellOf(p,idx-1); cwUser[pr][pc]=""; sel=[pr,pc]; }
+  showWrong=false;
+  drawCw(); updateCw(); markClueList();
+  saveCwSession();
+}
+function hintLetter(){
+  if(!selWord){ toast("Обери слово"); return; }
+  const p=selWord;
+  for(let i=0;i<p.len;i++){
+    const [r,c]=cellOf(p,i);
+    if((cwUser[r][c]||"")!==p.en[i]){
+      cwUser[r][c]=p.en[i]; sel=[r,c]; cwHints++;
+      $("#w-hints").textContent=cwHints;
+      if(wordDone(p)) markAnswer(curLevel.id,p.en,false);
+      drawCw(); showClue(); markClueList(); updateCw();
+      saveCwSession();
+      return;
+    }
+  }
+  toast("Слово вже відгадане");
+}
+let showWrong=false;
+function checkCw(){
+  let bad=0;
+  for(let r=0;r<grid.length;r++) for(let c=0;c<grid[0].length;c++)
+    if(cwUser[r][c]&&cwUser[r][c]!==grid[r][c]) bad++;
+  showWrong=true; drawCw();
+  toast(bad?("Помилкових літер: "+bad):"Помилок немає");
+  setTimeout(()=>{ showWrong=false; drawCw(); },2500);
+}
+function updateCw(){
+  const done=placed.filter(wordDone).length;
+  $("#w-count").textContent=done+" / "+placed.length;
+  $("#w-line").style.width=(done/placed.length*100)+"%";
+  if(done===placed.length&&placed.length&&!cwFinished){
+    cwFinished=true; clearInterval(cwTimer); $("#cw-cap").blur(); clearSession();
+    const ms=Date.now()-cwStart;
+    S.stats.cw++;
+    const key=curLevel.id+"_"+S.size;
+    const best=S.stats.cwBest[key];
+    const isBest=!best||ms<best;
+    if(isBest) S.stats.cwBest[key]=ms;
+    const t=today(); S.days[t]=(S.days[t]||0)+1; save();
+    setTimeout(()=>{
+      const stars = cwHints===0?"★★★":cwHints<=2?"★★☆":"★☆☆";
+      $("#d-stars").textContent=stars;
+      $("#d-big").textContent=mmss(ms);
+      $("#d-msg").textContent="Кросворд зібрано";
+      $("#d-note").textContent=(cwHints?("підказок: "+cwHints+" · "):"")
+        +(isBest?"новий найкращий час":"найкращий: "+mmss(S.stats.cwBest[key]));
+      $("#d-again").onclick=()=>startCrossword(curLevel);
+      openOverlay("s-done");
+    },420);
+  }
+}
+function drawKeyboard(){
+  const rows=["qwertyuiop","asdfghjkl","zxcvbnm"], kb=$("#cw-kb");
+  kb.innerHTML="";
+  rows.forEach((row,ri)=>{
+    const d=document.createElement("div"); d.className="kr";
+    if(ri===2){
+      const b=document.createElement("button"); b.className="wide"; b.textContent="слово";
+      b.onclick=()=>{ const i=placed.indexOf(selWord); selectWord(placed[(i+1)%placed.length]); drawCw(); markClueList(); focusCap(); };
+      d.appendChild(b);
+    }
+    row.split("").forEach(ch=>{
+      const b=document.createElement("button"); b.textContent=ch;
+      b.onclick=()=>typeLetter(ch); d.appendChild(b);
+    });
+    if(ri===2){ const b=document.createElement("button"); b.className="wide"; b.textContent="⌫";
+      b.onclick=eraseLetter; d.appendChild(b); }
+    kb.appendChild(d);
+  });
+}
+
+/* ==================== резервна копія ==================== */
+function exportData(){
+  const blob=new Blob([JSON.stringify(ALL,null,1)],{type:"application/json"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="slova-"+today()+".json";
+  a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+  toast("Файл збережено");
+}
+function importData(file){
+  const fr=new FileReader();
+  fr.onload=()=>{
+    try{
+      const d=JSON.parse(fr.result);
+      if(d.profiles){ ALL=d; }
+      else if(d.words){ const id="p"+Date.now(); ALL.profiles[id]=Object.assign(blank("Імпорт","📂"),d); ALL.active=id; }
+      else throw 0;
+      if(!ALL.profiles[ALL.active]) ALL.active=Object.keys(ALL.profiles)[0];
+      S=ALL.profiles[ALL.active]; save();
+      toast("Дані відновлено"); showTab("s-stats");
+    }catch(e){ toast("Файл не підходить"); }
+  };
+  fr.readAsText(file);
+}
+
+/* ==================== події ==================== */
+$$("nav button").forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
+$("#ava-learn").onclick =()=>showTab("s-more");
+$("#go-resume").onclick =resumeSession;
+$("#go-cards").onclick  =()=>startCards(getLevel(S.level),"mix");
+$("#go-review").onclick =()=>startCards(getLevel(S.level),"due");
+$("#go-hard").onclick   =()=>startCards(getLevel(S.level),"hard");
+$("#go-list").onclick   =()=>{ renderList(); openOverlay("s-list"); };
+$("#go-cw").onclick     =()=>startCrossword(getLevel(S.level));
+$("#c-close").onclick   =closeOverlay;
+$("#c-prev").onclick    =()=>{ if(qi>0){ qi--; nextCard(); } };
+$("#w-close").onclick   =()=>{ clearInterval(cwTimer); $("#cw-cap").blur(); closeOverlay(); };
+$("#cw-cap").addEventListener("input", capInput);
+$("#cw-cap").addEventListener("keydown", capKeydown);
+$("#kb-toggle").onclick=()=>{
+  const kb=$("#cw-kb"), show=kb.style.display==="none";
+  kb.style.display=show?"grid":"none";
+  $("#kb-toggle").textContent=show?"Клавіатура гри ▴":"Клавіатура гри ▾";
+  if(show) $("#cw-cap").blur(); else focusCap();
+};
+$("#l-close").onclick   =closeOverlay;
+$("#d-close").onclick   =closeOverlay;
+$("#d-back").onclick    =closeOverlay;
+$("#c-say").onclick     =()=>{ if(deck[qi]) say(deck[qi][0]); };
+/* Тап/клік по слову в прикладі речення — переклад (для миші є ще нативний тултип title) */
+document.addEventListener("click",e=>{
+  const w=e.target.closest(".sword");
+  if(w) toast(w.textContent+" — "+w.dataset.tr);
+});
+function updateStatusBtns(status){
+  $("#c-repeat").classList.toggle("on",status==="repeat");
+  $("#c-known").classList.toggle("on",status==="mastered");
+  $("#c-known").classList.toggle("mastered",status==="mastered");
+}
+$("#c-repeat").onclick=()=>{
+  if(!deck[qi]) return;
+  const en=deck[qi][0], st=setStatus(curLevel.id,en,"repeat");
+  updateStatusBtns(st);
+  toast(st==="repeat" ? "Буде з'являтися частіше" : "Позначку знято");
+};
+$("#c-known").onclick=()=>{
+  if(!deck[qi]) return;
+  const en=deck[qi][0], st=setStatus(curLevel.id,en,"mastered");
+  updateStatusBtns(st);
+  toast(st==="mastered" ? "Прибрано з наступних уроків" : "Позначку знято");
+};
+$("#c-ok").onclick      =checkTyped;
+$("#i-next").onclick    =()=>{ introI++; showIntro(); };
+$("#i-prev").onclick    =()=>{ if(introI>0){ introI--; showIntro(); } };
+$("#i-close").onclick   =closeOverlay;
+$("#i-say").onclick     =()=>{ const w=introQueue[introI]; if(w) say(w[0]); };
+$("#i-note").onclick    =()=>{ const w=introQueue[introI]; if(w) openNote(curLevel.id,w[0],w[1]); };
+$("#c-skip").onclick    =()=>{
+  if(answered) return;
+  answered=true;
+  const right=deck[qi][0];
+  $("#c-input").disabled=true; $("#c-input").className="no";
+  $("#c-feed").innerHTML="Правильно: <b>"+right+"</b>";
+  $("#c-sent").innerHTML=sentHtml(right,true);
+  markAnswer(curLevel.id,right,false); requeue(qi); say(right);
+  setTimeout(()=>{ qi++; nextCard(); },1900);
+};
+$("#c-input").addEventListener("keydown",e=>{ if(e.key==="Enter") checkTyped(); });
+$("#w-hint").onclick    =hintLetter;
+$("#w-check").onclick   =checkCw;
+$("#pf-add").onclick    =()=>openProfileEdit(null);
+$("#m-sound").onclick   =()=>{ S.sound=!S.sound; save(); renderProfiles(); toast(S.sound?"Озвучення увімкнено":"Озвучення вимкнено"); };
+$("#m-export").onclick  =exportData;
+$("#m-import").onclick  =()=>$("#file-in").click();
+$("#file-in").onchange  =e=>{ if(e.target.files[0]) importData(e.target.files[0]); e.target.value=""; };
+$("#m-reset").onclick   =()=>{
+  if(confirm("Скинути прогрес профілю «"+S.name+"»?")){
+    const keep={name:S.name,ava:S.ava,sound:S.sound,level:S.level,size:S.size};
+    ALL.profiles[ALL.active]=Object.assign(blank(keep.name,keep.ava),keep);
+    S=ALL.profiles[ALL.active]; save(); showTab("s-stats"); toast("Прогрес скинуто");
+  }
+};
+document.addEventListener("keydown",e=>{
+  if($("#modal").classList.contains("on")) return;
+  if(!$("#s-cw").classList.contains("on")) return;
+  if(document.activeElement===$("#cw-cap")) return;  // цей ввід уже обробляє capInput
+  if(/^[a-zA-Z]$/.test(e.key)) typeLetter(e.key);
+  else if(e.key==="Backspace"){ e.preventDefault(); eraseLetter(); }
+});
+
+showTab("s-learn");
+
+</script>
+<script>
+if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+        navigator.serviceWorker.register("./sw.js")
+            .then(function () {
+                console.log("Service Worker зареєстровано");
+            })
+            .catch(function (error) {
+                console.error("Помилка Service Worker:", error);
+            });
+    });
+}
+</script>
+</body>
+</html>
