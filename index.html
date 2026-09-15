@@ -12,7 +12,7 @@
   --board:#123028; --board-dk:#0d241e; --board-lt:#1b4034;
   --chalk:#f4f1e6; --dim:#9fb3aa;
   --yellow:#f2c14e; --coral:#e8705f; --sky:#6fc3c8; --lilac:#b49ae0; --green:#8fd694; --rose:#e39fc2;
-  --r:14px; --nav:76px;
+  --r:14px; --nav:18px;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%}
@@ -43,17 +43,20 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.05;z
   display:flex;align-items:center;justify-content:center;font-size:21px;flex:none;
   background:var(--board-lt);cursor:pointer}
 
-nav{position:fixed;left:0;right:0;bottom:0;z-index:5;background:var(--board-dk);
-  border-top:1px solid rgba(244,241,230,.14);padding-bottom:env(safe-area-inset-bottom);
-  display:flex;max-width:600px;margin:0 auto}
-nav button{flex:1;background:none;border:0;color:var(--dim);font:inherit;font-size:10.5px;
-  padding:9px 2px 8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px}
-/* іконки-ярлики як на головному екрані телефона */
-nav button .ic{font-size:19px;line-height:1;width:34px;height:34px;border-radius:10px;
+/* ---- робочий стіл: іконки-ярлики нагорі екрана «Вчити», як на телефоні ---- */
+.desktop{display:grid;grid-template-columns:repeat(3,1fr);gap:14px 8px;padding:6px 2px 18px}
+.dtile{background:none;border:0;color:var(--dim);font:inherit;font-size:12.5px;font-weight:600;
+  cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:7px}
+.dtile .ic{font-size:26px;line-height:1;width:56px;height:56px;border-radius:16px;
   display:flex;align-items:center;justify-content:center;background:var(--c,var(--yellow));
-  box-shadow:0 2px 5px rgba(0,0,0,.25);opacity:.62;transform:scale(.94);transition:opacity .15s,transform .15s}
-nav button.on{color:var(--chalk);font-weight:700}
-nav button.on .ic{opacity:1;transform:scale(1);box-shadow:0 3px 8px rgba(0,0,0,.35),0 0 0 2px rgba(244,241,230,.85)}
+  box-shadow:0 4px 10px rgba(0,0,0,.3)}
+.dtile:active .ic{transform:scale(.93)}
+.dtile .lb{color:var(--chalk)}
+
+/* ---- кнопка "додому" на решті екранів ---- */
+.homebtn{background:none;border:1.5px solid rgba(244,241,230,.25);color:var(--chalk);
+  width:40px;height:40px;border-radius:12px;font-size:16px;cursor:pointer;flex:none}
+.homebtn:active{background:rgba(244,241,230,.12)}
 
 .chips{display:flex;gap:7px;overflow-x:auto;padding:8px 0 10px}
 .chips::-webkit-scrollbar{display:none}
@@ -105,15 +108,15 @@ nav button.on .ic{opacity:1;transform:scale(1);box-shadow:0 3px 8px rgba(0,0,0,.
 .tile .t{font-weight:700;font-size:17.5px}
 .tile .d{color:var(--dim);font-size:13.5px;margin-top:1px}
 
-.lvcard{border:1.5px solid rgba(244,241,230,.2);border-left:6px solid var(--c);
-  border-radius:12px;background:var(--board-lt);padding:14px 16px;margin-bottom:12px;
-  display:flex;align-items:flex-start;gap:10px}
-.lvcard .nm{font-weight:700}
-.lvcard .st{color:var(--dim);font-size:13px;margin-top:2px}
-.lvcard .lvbody{flex:1;min-width:0}
-.lvlink{flex:none;background:none;border:1.5px solid rgba(244,241,230,.25);color:var(--dim);
-  font:inherit;font-size:12.5px;font-weight:600;padding:7px 11px;border-radius:20px;cursor:pointer}
-.lvlink:active{background:rgba(244,241,230,.12)}
+/* компактний рядок поточного рівня (весь рядок веде на екран «Рівень») */
+.lvmini{width:100%;border:0;background:none;color:var(--chalk);font:inherit;text-align:left;
+  cursor:pointer;display:flex;align-items:center;gap:10px;padding:6px 2px 14px}
+.lvmini:active{opacity:.75}
+.lvmini .dot{width:9px;height:9px;border-radius:50%;background:var(--c);flex:none}
+.lvmini .body{flex:1;min-width:0}
+.lvmini .nm{font-weight:700;font-size:14.5px}
+.lvmini .meter{height:4px;margin-top:5px}
+.lvmini .chev{color:var(--dim);font-size:15px;flex:none}
 .lvpick{width:100%;text-align:left;border:1.5px solid rgba(244,241,230,.2);border-left:6px solid var(--c);
   border-radius:12px;background:var(--board-lt);padding:14px 16px;margin-bottom:12px;font:inherit;
   color:var(--chalk);cursor:pointer}
@@ -125,8 +128,6 @@ nav button.on .ic{opacity:1;transform:scale(1);box-shadow:0 3px 8px rgba(0,0,0,.
 .lvpick .st{color:var(--dim);font-size:13px;margin-top:2px}
 .meter{height:6px;border-radius:3px;background:rgba(244,241,230,.14);margin-top:9px;overflow:hidden;display:flex}
 .meter i{display:block;height:100%}
-.legend{display:flex;gap:16px;flex-wrap:wrap;color:var(--dim);font-size:12.5px;padding:9px 0 0}
-.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
 
 .track{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--dim);padding:2px 0 4px}
 .track .line{flex:1;height:4px;background:rgba(244,241,230,.15);border-radius:2px;overflow:hidden}
@@ -298,6 +299,14 @@ table.cw td.cell.sel span.n{color:#5a4a1a}
     <div class="ava" id="ava-learn">🙂</div>
     <div style="flex:1"><h1 id="hi">Слова</h1><div class="sub" id="learn-sub"></div></div>
   </div>
+  <div class="desktop">
+    <button class="dtile" data-tab="s-learn"><span class="ic" style="--c:var(--yellow)">🎓</span><span class="lb">Вчити</span></button>
+    <button class="dtile" data-tab="s-level"><span class="ic" style="--c:var(--sky)">🎚️</span><span class="lb">Рівень</span></button>
+    <button class="dtile" data-tab="s-cwhome"><span class="ic" style="--c:var(--coral)">🔤</span><span class="lb">Кросворд</span></button>
+    <button class="dtile" data-tab="s-texts"><span class="ic" style="--c:var(--lilac)">📄</span><span class="lb">Тексти</span></button>
+    <button class="dtile" data-tab="s-stats"><span class="ic" style="--c:var(--green)">📊</span><span class="lb">Статистика</span></button>
+    <button class="dtile" data-tab="s-more"><span class="ic" style="--c:var(--rose)">👤</span><span class="lb">Профіль</span></button>
+  </div>
   <div class="cards4">
     <div class="kpi"><div class="v" id="qs-streak">0</div><div class="l">🔥 днів поспіль</div></div>
     <div class="kpi"><div class="v" id="qs-known">0</div><div class="l">📚 слів вивчено</div></div>
@@ -315,19 +324,15 @@ table.cw td.cell.sel span.n{color:#5a4a1a}
       <div class="sub" id="goal-d"></div>
     </div>
   </div>
-  <div class="lvcard" id="lv-card">
-    <div class="lvbody">
+  <button class="lvmini" id="lv-card">
+    <span class="dot" id="lv-dot"></span>
+    <div class="body">
       <div class="nm" id="lv-name"></div>
-      <div class="st" id="lv-st"></div>
       <div class="meter"><i id="m-known"></i><i id="m-learn"></i></div>
-      <div class="legend">
-        <span><i style="background:var(--sky)"></i><span id="n-known">0</span> знаю</span>
-        <span><i style="background:var(--yellow)"></i><span id="n-learn">0</span> вчу</span>
-        <span><i style="background:rgba(244,241,230,.3)"></i><span id="n-new">0</span> нові</span>
-      </div>
+      <div class="st" id="lv-st" style="margin-top:5px;font-size:12.5px"></div>
     </div>
-    <button class="lvlink" id="lv-change">Змінити</button>
-  </div>
+    <span class="chev">›</span>
+  </button>
   <button class="tile" id="go-resume" style="display:none;border-color:var(--yellow)">
     <div class="em">⏯️</div>
     <div><div class="t">Продовжити</div><div class="d" id="resume-txt"></div></div></button>
@@ -347,7 +352,8 @@ table.cw td.cell.sel span.n{color:#5a4a1a}
 <!-- ===== РІВЕНЬ ===== -->
 <section id="s-level" class="screen">
   <div class="head"><div style="flex:1"><h1>Рівень</h1>
-    <div class="sub">Діє одразу для вчити, кросворда й текстів</div></div></div>
+    <div class="sub">Діє одразу для вчити, кросворда й текстів</div></div>
+    <button class="homebtn" data-home="1">⌂</button></div>
   <div id="lvl-list"></div>
   <div class="spacer"></div>
 </section>
@@ -355,14 +361,16 @@ table.cw td.cell.sel span.n{color:#5a4a1a}
 <!-- ===== КРОСВОРД ===== -->
 <section id="s-cwhome" class="screen">
   <div class="head"><div style="flex:1"><h1>Кросворд</h1>
-    <div class="sub">Підказка — переклад, відповідь — англійською</div></div></div>
-  <div class="lvcard" id="cw-card">
-    <div class="lvbody">
+    <div class="sub">Підказка — переклад, відповідь — англійською</div></div>
+    <button class="homebtn" data-home="1">⌂</button></div>
+  <button class="lvmini" id="cw-card">
+    <span class="dot" id="cw-dot"></span>
+    <div class="body">
       <div class="nm" id="cw-name"></div>
-      <div class="st" id="cw-st"></div>
+      <div class="st" id="cw-st" style="margin-top:2px"></div>
     </div>
-    <button class="lvlink" id="cw-change">Змінити</button>
-  </div>
+    <span class="chev">›</span>
+  </button>
   <div class="sect" style="margin-top:4px">Розмір</div>
   <div class="chips" id="chips-size"></div>
   <button class="btn primary" id="go-cw" style="margin-top:6px">Новий кросворд</button>
@@ -372,14 +380,16 @@ table.cw td.cell.sel span.n{color:#5a4a1a}
 <!-- ===== ТЕКСТИ ===== -->
 <section id="s-texts" class="screen">
   <div class="head"><div style="flex:1"><h1>Тексти</h1>
-    <div class="sub">Читай і торкайся слова, щоб побачити переклад</div></div></div>
-  <div class="lvcard" id="tx-card">
-    <div class="lvbody">
+    <div class="sub">Читай і торкайся слова, щоб побачити переклад</div></div>
+    <button class="homebtn" data-home="1">⌂</button></div>
+  <button class="lvmini" id="tx-card">
+    <span class="dot" id="tx-dot"></span>
+    <div class="body">
       <div class="nm" id="tx-name"></div>
-      <div class="st" id="tx-st"></div>
+      <div class="st" id="tx-st" style="margin-top:2px"></div>
     </div>
-    <button class="lvlink" id="tx-change">Змінити</button>
-  </div>
+    <span class="chev">›</span>
+  </button>
   <div id="tx-list"></div>
   <div class="spacer"></div>
 </section>
@@ -401,7 +411,8 @@ table.cw td.cell.sel span.n{color:#5a4a1a}
 
 <!-- ===== СТАТИСТИКА ===== -->
 <section id="s-stats" class="screen">
-  <div class="head"><div style="flex:1"><h1>Статистика</h1><div class="sub" id="st-sub"></div></div></div>
+  <div class="head"><div style="flex:1"><h1>Статистика</h1><div class="sub" id="st-sub"></div></div>
+    <button class="homebtn" data-home="1">⌂</button></div>
   <div class="cards4">
     <div class="kpi"><div class="v" id="k-known">0</div><div class="l">вивчено слів</div></div>
     <div class="kpi"><div class="v" id="k-streak">0</div><div class="l">днів поспіль</div></div>
@@ -421,7 +432,8 @@ table.cw td.cell.sel span.n{color:#5a4a1a}
 
 <!-- ===== ПРОФІЛІ ===== -->
 <section id="s-more" class="screen">
-  <div class="head"><div style="flex:1"><h1>Профіль</h1><div class="sub" id="pf-sub"></div></div></div>
+  <div class="head"><div style="flex:1"><h1>Профіль</h1><div class="sub" id="pf-sub"></div></div>
+    <button class="homebtn" data-home="1">⌂</button></div>
   <div class="plist" id="pf-list"></div>
   <button class="btn ghost" id="pf-add" style="margin-top:12px">Додати профіль</button>
 
@@ -560,14 +572,6 @@ table.cw td.cell.sel span.n{color:#5a4a1a}
 
 </div>
 
-<nav>
-  <button data-tab="s-learn" class="on"><span class="ic" style="--c:var(--yellow)">🎓</span>Вчити</button>
-  <button data-tab="s-level"><span class="ic" style="--c:var(--sky)">🎚️</span>Рівень</button>
-  <button data-tab="s-cwhome"><span class="ic" style="--c:var(--coral)">🔤</span>Кросворд</button>
-  <button data-tab="s-texts"><span class="ic" style="--c:var(--lilac)">📄</span>Тексти</button>
-  <button data-tab="s-stats"><span class="ic" style="--c:var(--green)">📊</span>Статистика</button>
-  <button data-tab="s-more"><span class="ic" style="--c:var(--rose)">👤</span>Профіль</button>
-</nav>
 <div class="toast" id="toast"></div>
 
 <div class="modal" id="modal-note">
@@ -978,8 +982,6 @@ function showTab(id){
   overlay=null; tab=id;
   $$(".screen").forEach(s=>s.classList.remove("on"));
   $("#"+id).classList.add("on");
-  $$("nav button").forEach(b=>b.classList.toggle("on",b.dataset.tab===id));
-  document.querySelector("nav").style.display="flex";
   ({"s-learn":renderLearn,"s-level":renderLevel,"s-cwhome":renderCwHome,"s-texts":renderTexts,
     "s-stats":renderStats,"s-more":renderProfiles}[id]||function(){})();
   window.scrollTo(0,0);
@@ -988,7 +990,6 @@ function openOverlay(id){
   overlay=id;
   $$(".screen").forEach(s=>s.classList.remove("on"));
   $("#"+id).classList.add("on");
-  document.querySelector("nav").style.display=(id==="s-list")?"flex":"none";
   window.scrollTo(0,0);
 }
 const closeOverlay=()=>showTab(tab);
@@ -1037,13 +1038,12 @@ function renderLearn(){
   $("#qs-streak").textContent=streak();
   $("#qs-known").textContent=Object.values(S.words).filter(w=>w.b>=4).length;
   const lv=getLevel(S.level), s=lvStats(lv);
-  $("#lv-card").style.setProperty("--c",lv.color);
-  $("#lv-change").onclick=()=>showTab("s-level");
+  $("#lv-card").onclick=()=>showTab("s-level");
+  $("#lv-dot").style.background=lv.color;
   $("#lv-name").textContent=lv.code+" · "+lv.name;
-  $("#lv-st").textContent=lv.desc+" · "+s.total+" слів";
+  $("#lv-st").textContent=s.known+" знаю · "+s.learning+" вчу · "+s.fresh+" нові";
   $("#m-known").style.cssText="width:"+(s.known/s.total*100)+"%;background:var(--sky)";
   $("#m-learn").style.cssText="width:"+(s.learning/s.total*100)+"%;background:var(--yellow)";
-  $("#n-known").textContent=s.known; $("#n-learn").textContent=s.learning; $("#n-new").textContent=s.fresh;
   $("#due-txt").textContent=s.due?("Слів на сьогодні: "+s.due):"На сьогодні все повторено";
   $("#hard-txt").textContent=s.hard?("Слів із помилками: "+s.hard):"Помилок поки немає";
   $("#learn-sub").textContent="Вивчено "+s.known+" з "+s.total+" на рівні "+lv.code;
@@ -1056,8 +1056,8 @@ function renderLearn(){
 const SIZES={s:{n:10,w:8,t:"Малий"},m:{n:13,w:12,t:"Середній"},l:{n:16,w:18,t:"Великий"}};
 function renderCwHome(){
   const lv=getLevel(S.level);
-  $("#cw-change").onclick=()=>showTab("s-level");
-  $("#cw-card").style.setProperty("--c",lv.color);
+  $("#cw-card").onclick=()=>showTab("s-level");
+  $("#cw-dot").style.background=lv.color;
   $("#cw-name").textContent=lv.code+" · "+lv.name;
   const best=S.stats.cwBest[lv.id+"_"+S.size];
   $("#cw-st").textContent="Зібрано кросвордів: "+S.stats.cw+(best?("  ·  найкращий час: "+mmss(best)):"");
@@ -1080,8 +1080,8 @@ function textRead(lvId,i){ return !!(S.read && S.read[textKey(lvId,i)]); }
 
 function renderTexts(){
   const lv=getLevel(S.level);
-  $("#tx-change").onclick=()=>showTab("s-level");
-  $("#tx-card").style.setProperty("--c",lv.color);
+  $("#tx-card").onclick=()=>showTab("s-level");
+  $("#tx-dot").style.background=lv.color;
   $("#tx-name").textContent=lv.code+" · "+lv.name;
   $("#tx-st").textContent=lv.desc;
   const arr=(TEXTS[lv.id]||[]);
@@ -1893,7 +1893,8 @@ function importData(file){
 }
 
 /* ==================== події ==================== */
-$$("nav button").forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
+$$(".dtile").forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
+$$(".homebtn").forEach(b=>b.onclick=()=>showTab("s-learn"));
 $("#ava-learn").onclick =()=>showTab("s-more");
 $("#go-resume").onclick =resumeSession;
 $("#go-cards").onclick  =()=>startCards(getLevel(S.level),"mix");
