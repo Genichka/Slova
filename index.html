@@ -129,10 +129,6 @@ nav button.on{color:var(--yellow)}
 .cwtop{display:flex;gap:10px;align-items:center;padding:2px 0 6px;font-size:13.5px;color:var(--dim)}
 .cwtop b{color:var(--chalk);font-weight:700}
 .cw-wrap{overflow:auto;padding:2px 0 6px;position:relative}
-.cw-cap{position:absolute;top:0;left:0;width:1px;height:1px;padding:0;margin:0;border:0;
-  opacity:0;font-size:16px;pointer-events:none;caret-color:transparent}
-.kbtoggle{color:var(--dim);font-size:12.5px;text-align:center;padding:6px 0;cursor:pointer;
-  -webkit-user-select:none;user-select:none}
 table.cw{border-collapse:collapse;margin:0 auto}
 table.cw td{width:32px;height:32px;padding:0;text-align:center;font-weight:700;font-size:16px;
   border:1px solid transparent;background:transparent;color:transparent}
@@ -211,6 +207,7 @@ table.cw td.cell.sel span.n{color:#5a4a1a}
   border:1.5px solid rgba(244,241,230,.3);background:var(--board-lt);color:var(--chalk);
   -webkit-user-select:text;user-select:text}
 #c-input:focus{outline:none;border-color:var(--yellow)}
+#c-input{caret-color:transparent;cursor:default}
 #c-input.ok{border-color:var(--sky);background:rgba(111,195,200,.18)}
 #c-input.no{border-color:var(--coral);background:rgba(232,112,95,.18)}
 .ua-big{font-size:20px;color:var(--sky);font-weight:600;margin-top:6px}
@@ -419,8 +416,10 @@ table.cw td.cell.sel span.n{color:#5a4a1a}
   <div class="opts" id="c-opts"></div>
   <div id="c-type" style="display:none;padding-bottom:10px">
     <input id="c-input" placeholder="напиши англійською" autocomplete="off"
-           autocapitalize="off" autocorrect="off" spellcheck="false">
+           autocapitalize="off" autocorrect="off" spellcheck="false"
+           readonly inputmode="none" tabindex="-1">
     <div id="c-feed" class="feed"></div>
+    <div class="kb" id="c-kb"></div>
     <div class="row2" style="margin-top:10px">
       <button class="btn primary" id="c-ok">Перевірити</button>
       <button class="btn ghost" id="c-skip">Не знаю</button>
@@ -471,12 +470,9 @@ table.cw td.cell.sel span.n{color:#5a4a1a}
   </div>
   <div class="cw-wrap" id="cw-wrap">
     <div id="cw-grid"></div>
-    <input id="cw-cap" class="cw-cap" type="text" inputmode="text" maxlength="1"
-           autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" aria-hidden="true">
   </div>
   <div class="clue" id="cw-clue"></div>
-  <div class="kbtoggle" id="kb-toggle">Клавіатура гри ▾</div>
-  <div class="kb" id="cw-kb" style="display:none"></div>
+  <div class="kb" id="cw-kb"></div>
   <div class="cluelist" id="cw-clues"></div>
 </section>
 
@@ -691,7 +687,7 @@ function resumeSession(){
     sel=null; selWord=null;
     selectWord(placed.find(p=>!wordDone(p))||placed[0]);
     drawCw(); drawKeyboard(); drawClueList(); updateCw();
-    openOverlay("s-cw"); setTimeout(focusCap,60);
+    openOverlay("s-cw");
   }
 }
 
@@ -710,7 +706,6 @@ function autosaveNow(){
 document.addEventListener("visibilitychange",()=>{ if(document.hidden) autosaveNow(); });
 window.addEventListener("pagehide", autosaveNow);
 window.addEventListener("beforeunload", autosaveNow);
-window.addEventListener("resize",()=>{ if($("#s-cw").classList.contains("on")) positionCap(); });
 
 /* ==================== слова й повторення ==================== */
 const wkey=(lv,en)=>lv+":"+en;
@@ -1409,7 +1404,6 @@ function nextCard(){
     inp.value=""; inp.className=""; inp.disabled=false;
     $("#c-feed").textContent="";
     $("#c-ok").textContent="Перевірити";
-    setTimeout(()=>inp.focus(),120);
     return;
   }
 
@@ -1438,6 +1432,40 @@ function requeue(i){
 }
 
 function normalize(s){ return (s||"").trim().toLowerCase().replace(/\s+/g," "); }
+/* ---- власна клавіатура для вправи "напиши слово" ----
+   #c-input — readonly-дисплей, системна клавіатура телефона на нього ніколи
+   не спливає; весь ввід іде через кнопки нижче або фізичну клавіатуру. */
+function drawWordKeyboard(){
+  const rows=["qwertyuiop","asdfghjkl","zxcvbnm"], kb=$("#c-kb");
+  if(!kb) return;
+  kb.innerHTML="";
+  rows.forEach((row,ri)=>{
+    const d=document.createElement("div"); d.className="kr";
+    if(ri===2){
+      const b=document.createElement("button"); b.className="wide"; b.textContent="␣";
+      b.onclick=()=>typeWordLetter(" "); d.appendChild(b);
+    }
+    row.split("").forEach(ch=>{
+      const b=document.createElement("button"); b.textContent=ch;
+      b.onclick=()=>typeWordLetter(ch); d.appendChild(b);
+    });
+    if(ri===2){ const b=document.createElement("button"); b.className="wide"; b.textContent="⌫";
+      b.onclick=eraseWordLetter; d.appendChild(b); }
+    kb.appendChild(d);
+  });
+}
+function typeWordLetter(ch){
+  if(answered) return;
+  const inp=$("#c-input");
+  if(inp.value.length>=24) return;
+  if(ch===" " && (!inp.value.length || inp.value.endsWith(" "))) return;
+  inp.value+=ch;
+}
+function eraseWordLetter(){
+  if(answered) return;
+  const inp=$("#c-input");
+  inp.value=inp.value.slice(0,-1);
+}
 function checkTyped(){
   if(answered) return;
   const right=deck[qi][0], val=normalize($("#c-input").value);
@@ -1567,7 +1595,6 @@ function startCrossword(lv){
   selectWord(placed[0]);
   drawCw(); drawKeyboard(); drawClueList(); updateCw();
   openOverlay("s-cw");
-  setTimeout(focusCap,60);
 }
 const wordsAt=(r,c)=>placed.filter(p=> p.dir==="a"?(p.r===r&&c>=p.c&&c<p.c+p.len):(p.c===c&&r>=p.r&&r<p.r+p.len));
 const cellOf=(p,i)=> p.dir==="a" ? [p.r,p.c+i] : [p.r+i,p.c];
@@ -1609,47 +1636,17 @@ function drawCw(){
   }
   $("#cw-grid").innerHTML=h+"</table>";
   $$("#cw-grid td.cell").forEach(td=>td.onclick=()=>selectCell(+td.dataset.r,+td.dataset.c));
-  if($("#s-cw").classList.contains("on")) positionCap();
 }
 function selectCell(r,c){
   const ws=wordsAt(r,c); if(!ws.length) return;
   if(sel&&sel[0]===r&&sel[1]===c&&ws.length>1) selWord=ws[(ws.indexOf(selWord)+1)%ws.length];
   else if(!selWord||!ws.includes(selWord)) selWord=ws.find(w=>!wordDone(w))||ws[0];
-  sel=[r,c]; drawCw(); showClue(); markClueList(); focusCap();
+  sel=[r,c]; drawCw(); showClue(); markClueList();
 }
 
-/* ---- ввід через системну клавіатуру телефона ----
-   Кнопки власної клавіатури були 29×42px — менше за норму дотику 44px,
-   звідси промахи по сусідніх літерах. Тепер основний спосіб — системна
-   клавіатура (великі кнопки), а ігрова лишається як запасна. */
-function positionCap(){
-  const cap=$("#cw-cap"), wrap=$("#cw-wrap");
-  if(!cap||!wrap||!sel) return;
-  const td=document.querySelector('#cw-grid td[data-r="'+sel[0]+'"][data-c="'+sel[1]+'"]');
-  if(!td) return;
-  const tr=td.getBoundingClientRect(), wr=wrap.getBoundingClientRect();
-  cap.style.left=(tr.left-wr.left+wrap.scrollLeft)+"px";
-  cap.style.top=(tr.top-wr.top+wrap.scrollTop)+"px";
-  cap.style.width=tr.width+"px"; cap.style.height=tr.height+"px";
-}
-function focusCap(){
-  positionCap();
-  const cap=$("#cw-cap"); if(!cap) return;
-  const kb=$("#cw-kb");
-  if(kb&&kb.style.display!=="none") return;   // гравець сам відкрив ігрову клавіатуру
-  cap.value="";
-  try{ cap.focus({preventScroll:true}); }catch(e){ cap.focus(); }
-}
-function capInput(){
-  const cap=$("#cw-cap");
-  const m=(cap.value||"").match(/[a-zA-Z]/g);
-  if(m&&m.length) typeLetter(m[m.length-1]);
-  cap.value="";
-}
-function capKeydown(e){
-  if(e.key==="Backspace"){ e.preventDefault(); eraseLetter(); }
-  else if(e.key.indexOf("Arrow")===0){ e.preventDefault(); moveSel(e.key); }
-}
+/* ---- ввід через власну клавіатуру ----
+   Системна клавіатура телефона закриває половину екрана, тому весь ввід
+   у кросворді йде лише через клавіатуру гри (завжди видима під сіткою). */
 function moveSel(key){
   if(!sel) return;
   const d = key==="ArrowRight"?[0,1] : key==="ArrowLeft"?[0,-1] : key==="ArrowUp"?[-1,0] : [1,0];
@@ -1675,7 +1672,7 @@ function drawClueList(){
   $$("#cw-clues .cluerow").forEach(row=>{
     row.onclick=()=>{
       const p=placed.find(x=>x.no==row.dataset.no&&x.dir===row.dataset.dir);
-      selectWord(p); drawCw(); markClueList(); focusCap();
+      selectWord(p); drawCw(); markClueList();
       $("#cw-grid").scrollIntoView({block:"nearest"});
     };
   });
@@ -1751,7 +1748,7 @@ function updateCw(){
   $("#w-count").textContent=done+" / "+placed.length;
   $("#w-line").style.width=(done/placed.length*100)+"%";
   if(done===placed.length&&placed.length&&!cwFinished){
-    cwFinished=true; clearInterval(cwTimer); $("#cw-cap").blur(); clearSession();
+    cwFinished=true; clearInterval(cwTimer); clearSession();
     const ms=Date.now()-cwStart;
     S.stats.cw++;
     const key=curLevel.id+"_"+S.size;
@@ -1778,7 +1775,7 @@ function drawKeyboard(){
     const d=document.createElement("div"); d.className="kr";
     if(ri===2){
       const b=document.createElement("button"); b.className="wide"; b.textContent="слово";
-      b.onclick=()=>{ const i=placed.indexOf(selWord); selectWord(placed[(i+1)%placed.length]); drawCw(); markClueList(); focusCap(); };
+      b.onclick=()=>{ const i=placed.indexOf(selWord); selectWord(placed[(i+1)%placed.length]); drawCw(); markClueList(); };
       d.appendChild(b);
     }
     row.split("").forEach(ch=>{
@@ -1832,15 +1829,7 @@ $("#r-say").onclick     =()=>{ const t=curText&&(TEXTS[curText.lvId]||[])[curTex
 $("#go-cw").onclick     =()=>startCrossword(getLevel(S.level));
 $("#c-close").onclick   =closeOverlay;
 $("#c-prev").onclick    =()=>{ if(qi>0){ qi--; nextCard(); } };
-$("#w-close").onclick   =()=>{ clearInterval(cwTimer); $("#cw-cap").blur(); closeOverlay(); };
-$("#cw-cap").addEventListener("input", capInput);
-$("#cw-cap").addEventListener("keydown", capKeydown);
-$("#kb-toggle").onclick=()=>{
-  const kb=$("#cw-kb"), show=kb.style.display==="none";
-  kb.style.display=show?"grid":"none";
-  $("#kb-toggle").textContent=show?"Клавіатура гри ▴":"Клавіатура гри ▾";
-  if(show) $("#cw-cap").blur(); else focusCap();
-};
+$("#w-close").onclick   =()=>{ clearInterval(cwTimer); closeOverlay(); };
 $("#l-close").onclick   =closeOverlay;
 $("#d-close").onclick   =closeOverlay;
 $("#d-back").onclick    =closeOverlay;
@@ -1890,7 +1879,7 @@ $("#c-skip").onclick    =()=>{
   markAnswer(curLevel.id,right,false); requeue(qi); say(right);
   setTimeout(()=>{ qi++; nextCard(); },1900);
 };
-$("#c-input").addEventListener("keydown",e=>{ if(e.key==="Enter") checkTyped(); });
+
 $("#w-hint").onclick    =hintLetter;
 $("#w-check").onclick   =checkCw;
 $("#pf-add").onclick    =()=>openProfileEdit(null);
@@ -1908,11 +1897,23 @@ $("#m-reset").onclick   =()=>{
 document.addEventListener("keydown",e=>{
   if($("#modal").classList.contains("on")) return;
   if(!$("#s-cw").classList.contains("on")) return;
-  if(document.activeElement===$("#cw-cap")) return;  // цей ввід уже обробляє capInput
   if(/^[a-zA-Z]$/.test(e.key)) typeLetter(e.key);
   else if(e.key==="Backspace"){ e.preventDefault(); eraseLetter(); }
 });
+/* Фізична клавіатура комп'ютера теж працює у вправі "напиши слово" —
+   поле c-input лише readonly-дисплей, весь ввід іде через drawWordKeyboard()
+   або через цей слухач, системна клавіатура телефона ніколи не викликається. */
+document.addEventListener("keydown",e=>{
+  if($("#modal").classList.contains("on")||$("#modal-note").classList.contains("on")) return;
+  if(!$("#s-cards").classList.contains("on")) return;
+  if($("#c-type").style.display==="none") return;
+  if(e.key==="Enter"){ checkTyped(); return; }
+  if(e.key==="Backspace"){ e.preventDefault(); eraseWordLetter(); return; }
+  if(e.key===" "){ e.preventDefault(); typeWordLetter(" "); return; }
+  if(/^[a-zA-Zʼ']$/.test(e.key)) typeWordLetter(e.key.toLowerCase());
+});
 
+drawWordKeyboard();
 showTab("s-learn");
 
 </script>
