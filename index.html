@@ -256,6 +256,10 @@ table.cw td.cell.sel span.n{color:#5a4a1a}
     <div class="ava" id="ava-learn">🙂</div>
     <div style="flex:1"><h1 id="hi">Слова</h1><div class="sub" id="learn-sub"></div></div>
   </div>
+  <div class="cards4">
+    <div class="kpi"><div class="v" id="qs-streak">0</div><div class="l">🔥 днів поспіль</div></div>
+    <div class="kpi"><div class="v" id="qs-known">0</div><div class="l">📚 слів вивчено</div></div>
+  </div>
   <div class="goalrow" id="goalrow">
     <svg class="ring" viewBox="0 0 40 40">
       <circle cx="20" cy="20" r="16" fill="none" stroke="rgba(244,241,230,.15)" stroke-width="5"/>
@@ -291,6 +295,8 @@ table.cw td.cell.sel span.n{color:#5a4a1a}
     <div><div class="t">Робота над помилками</div><div class="d" id="hard-txt"></div></div></button>
   <button class="tile" id="go-list"><div class="em">📋</div>
     <div><div class="t">Усі слова рівня</div><div class="d">Переглянути, послухати, скинути</div></div></button>
+  <button class="tile" id="go-crossword"><div class="em">🧩</div>
+    <div><div class="t">Кросворд</div><div class="d">Зібрати слова цього рівня в сітку</div></div></button>
   <div class="spacer"></div>
 </section>
 
@@ -924,7 +930,9 @@ function renderGoal(){
 function renderLearn(){
   renderGoal();
   $("#ava-learn").textContent=S.ava;
-  $("#hi").textContent=S.name;
+  $("#hi").textContent="Привіт, "+S.name;
+  $("#qs-streak").textContent=streak();
+  $("#qs-known").textContent=Object.values(S.words).filter(w=>w.b>=4).length;
   drawChips($("#chips-learn"),renderLearn);
   const lv=getLevel(S.level), s=lvStats(lv);
   $("#lv-card").style.setProperty("--c",lv.color);
@@ -1722,6 +1730,7 @@ $("#go-cards").onclick  =()=>startCards(getLevel(S.level),"mix");
 $("#go-review").onclick =()=>startCards(getLevel(S.level),"due");
 $("#go-hard").onclick   =()=>startCards(getLevel(S.level),"hard");
 $("#go-list").onclick   =()=>{ renderList(); openOverlay("s-list"); };
+$("#go-crossword").onclick =()=>showTab("s-cwhome");
 $("#go-cw").onclick     =()=>startCrossword(getLevel(S.level));
 $("#c-close").onclick   =closeOverlay;
 $("#c-prev").onclick    =()=>{ if(qi>0){ qi--; nextCard(); } };
