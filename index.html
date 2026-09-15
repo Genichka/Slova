@@ -52,6 +52,24 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.05;z
   box-shadow:0 4px 10px rgba(0,0,0,.3)}
 .dtile:active .ic{transform:scale(.93)}
 .dtile .lb{color:var(--chalk)}
+.dtile.open .ic{box-shadow:0 0 0 3px rgba(242,193,78,.35),0 4px 10px rgba(0,0,0,.3)}
+.dtile .lb .caret{display:inline-block;font-size:10px;margin-left:3px;transition:transform .18s}
+.dtile.open .lb .caret{transform:rotate(180deg)}
+
+/* ---- випадний список під іконкою «Вчити» ---- */
+.dmenu{display:none;margin:-8px 2px 14px;border:1.5px solid rgba(244,241,230,.22);
+  border-radius:14px;background:var(--board-dk);overflow:hidden;
+  box-shadow:0 10px 24px rgba(0,0,0,.35)}
+.dmenu.on{display:block;animation:dmenu-in .16s ease-out}
+@keyframes dmenu-in{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.dmenu button{display:flex;align-items:center;gap:12px;width:100%;padding:12px 14px;
+  border:0;border-bottom:1px solid rgba(244,241,230,.1);background:none;color:var(--chalk);
+  font:inherit;text-align:left;cursor:pointer}
+.dmenu button:last-child{border-bottom:0}
+.dmenu button:active{background:rgba(244,241,230,.08)}
+.dmenu .em{font-size:22px;flex:none;width:30px;text-align:center}
+.dmenu .t{font-weight:700;font-size:15.5px}
+.dmenu .d{color:var(--dim);font-size:12.5px;margin-top:1px}
 
 /* ---- кнопка "додому" на решті екранів ---- */
 .homebtn{background:none;border:1.5px solid rgba(244,241,230,.25);color:var(--chalk);
@@ -249,8 +267,13 @@ table.cw td.cell.sel span.n{color:#5a4a1a}
 .result-banner.no .rb-title{color:var(--coral)}
 .result-banner .rb-sub{font-size:13.5px;color:var(--chalk);opacity:.85;margin-top:2px}
 .result-banner .rb-sub b{color:var(--chalk);opacity:1}
-.result-banner button{flex:none;padding:10px 16px;font-size:14.5px;background:var(--yellow);
-  color:#2a2010;border-color:var(--yellow);font-weight:700}
+/* .btn задає width:100% — у банері кнопка має бути по ширині тексту, інакше накриває його */
+.result-banner button{flex:none;width:auto;min-width:96px;padding:10px 16px;font-size:14.5px;
+  background:var(--yellow);color:#2a2010;border-color:var(--yellow);font-weight:700;white-space:nowrap}
+@media (max-width:380px){
+  .result-banner{gap:9px;padding:12px}
+  .result-banner button{min-width:84px;padding:10px 12px}
+}
 .note-box{width:100%;padding:13px 14px;border-radius:12px;border:1.5px solid rgba(244,241,230,.25);
   background:var(--board-lt);color:var(--chalk);font:inherit;margin-bottom:12px;min-height:76px;
   -webkit-user-select:text;user-select:text;resize:none}
@@ -300,13 +323,14 @@ table.cw td.cell.sel span.n{color:#5a4a1a}
     <div style="flex:1"><h1 id="hi">Слова</h1><div class="sub" id="learn-sub"></div></div>
   </div>
   <div class="desktop">
-    <button class="dtile" data-tab="s-learn"><span class="ic" style="--c:var(--yellow)">🎓</span><span class="lb">Вчити</span></button>
+    <button class="dtile" id="dt-learn" data-menu="1"><span class="ic" style="--c:var(--yellow)">🎓</span><span class="lb">Вчити<span class="caret">▾</span></span></button>
     <button class="dtile" data-tab="s-level"><span class="ic" style="--c:var(--sky)">🎚️</span><span class="lb">Рівень</span></button>
     <button class="dtile" data-tab="s-cwhome"><span class="ic" style="--c:var(--coral)">🔤</span><span class="lb">Кросворд</span></button>
     <button class="dtile" data-tab="s-texts"><span class="ic" style="--c:var(--lilac)">📄</span><span class="lb">Тексти</span></button>
     <button class="dtile" data-tab="s-stats"><span class="ic" style="--c:var(--green)">📊</span><span class="lb">Статистика</span></button>
     <button class="dtile" data-tab="s-more"><span class="ic" style="--c:var(--rose)">👤</span><span class="lb">Профіль</span></button>
   </div>
+  <div class="dmenu" id="learn-menu"></div>
   <div class="cards4">
     <div class="kpi"><div class="v" id="qs-streak">0</div><div class="l">🔥 днів поспіль</div></div>
     <div class="kpi"><div class="v" id="qs-known">0</div><div class="l">📚 слів вивчено</div></div>
@@ -980,6 +1004,7 @@ const $=s=>document.querySelector(s), $$=s=>Array.from(document.querySelectorAll
 let tab="s-learn", overlay=null;
 function showTab(id){
   overlay=null; tab=id;
+  closeLearnMenu();
   $$(".screen").forEach(s=>s.classList.remove("on"));
   $("#"+id).classList.add("on");
   ({"s-learn":renderLearn,"s-level":renderLevel,"s-cwhome":renderCwHome,"s-texts":renderTexts,
@@ -1893,7 +1918,42 @@ function importData(file){
 }
 
 /* ==================== події ==================== */
-$$(".dtile").forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
+$$(".dtile").forEach(b=>{ if(b.dataset.tab) b.onclick=()=>{ closeLearnMenu(); showTab(b.dataset.tab); }; });
+
+/* «Вчити» не веде на окремий екран (ми вже на ньому) — вона розгортає список дій.
+   Пункти беремо з плиток нижче, щоб підписи й логіка не дублювались. */
+const LEARN_MENU=["go-resume","go-cards","go-review","go-hard","go-list","go-crossword"];
+function buildLearnMenu(){
+  const box=$("#learn-menu"); box.innerHTML="";
+  LEARN_MENU.forEach(id=>{
+    const src=$("#"+id);
+    if(!src || src.style.display==="none") return;
+    const b=document.createElement("button");
+    b.innerHTML='<span class="em"></span><span><span class="t"></span><span class="d" style="display:block"></span></span>';
+    b.querySelector(".em").textContent=src.querySelector(".em").textContent;
+    b.querySelector(".t").textContent =src.querySelector(".t").textContent;
+    b.querySelector(".d").textContent =src.querySelector(".d").textContent;
+    b.onclick=()=>{ closeLearnMenu(); src.click(); };
+    box.appendChild(b);
+  });
+}
+function closeLearnMenu(){
+  $("#learn-menu").classList.remove("on");
+  $("#dt-learn").classList.remove("open");
+}
+$("#dt-learn").onclick=e=>{
+  e.stopPropagation();
+  const open=$("#learn-menu").classList.contains("on");
+  if(open){ closeLearnMenu(); return; }
+  buildLearnMenu();
+  $("#learn-menu").classList.add("on");
+  $("#dt-learn").classList.add("open");
+};
+document.addEventListener("click",e=>{
+  if(!$("#learn-menu").classList.contains("on")) return;
+  if(e.target.closest("#learn-menu")||e.target.closest("#dt-learn")) return;
+  closeLearnMenu();
+});
 $$(".homebtn").forEach(b=>b.onclick=()=>showTab("s-learn"));
 $("#ava-learn").onclick =()=>showTab("s-more");
 $("#go-resume").onclick =resumeSession;
